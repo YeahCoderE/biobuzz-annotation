@@ -8,7 +8,7 @@ are publicly readable by anyone.
 
 After GitHub Pages is enabled for the repository, open:
 
-`https://kan3d2.github.io/biobuzz-annotation/`
+`https://YeahCoderE.github.io/biobuzz-annotation/`
 
 ## Add images for everyone
 
