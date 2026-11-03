@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>BioBuzz | סביבת תיוג</title>
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="BioBuzz - דף הבית">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span><strong>BioBuzz</strong><small>סטודיו לתיוג תמונות</small></span>
+      </a>
+      <div class="sidebar-section">
+        <div class="section-title"><span>התמונות שלך</span><span id="image-count" class="count-pill">—</span></div>
+        <button id="upload-images" class="upload-images-button">＋ העלאת תמונות מהמחשב</button>
+        <input id="image-upload" type="file" accept="image/*" multiple hidden>
+        <button id="export-drafts" class="export-drafts-button">↓ ייצוא הטיוטות למחשב</button>
+        <button id="import-drafts" class="export-drafts-button">↑ ייבוא טיוטות</button>
+        <input id="draft-upload" type="file" accept="application/json,.json" hidden>
+        <label class="search-box">
+          <span aria-hidden="true">⌕</span>
+          <input id="image-search" type="search" placeholder="חיפוש תמונה..." aria-label="חיפוש תמונה">
+        </label>
+        <div class="filter-row" role="group" aria-label="סינון תמונות">
+          <button class="filter active" data-filter="all">הכול</button>
+          <button class="filter" data-filter="todo">ממתינות</button>
+          <button class="filter" data-filter="review">טיוטות</button>
+        </div>
+        <div id="image-list" class="image-list" aria-live="polite"></div>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="privacy-note"><span class="privacy-icon">!</span><span><strong>האתר ציבורי</strong><small>קובצי הריפו גלויים לכולם</small></span></div>
+        <button id="open-guide" class="text-button">איך משתמשים? <span aria-hidden="true">←</span></button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>סביבת עבודה</span><b>/</b><strong>תיוג ידני</strong></div>
+        <div class="topbar-actions">
+          <span class="local-badge"><i></i> רץ במחשב שלך</span>
+          <button class="icon-button" id="guide-button" title="הסבר על התיוג" aria-label="הסבר על התיוג">?</button>
+        </div>
+      </header>
+
+      <section class="welcome-strip" id="welcome-strip">
+        <div class="welcome-copy">
+          <span class="eyebrow">מתחילים פשוט</span>
+          <h1>בואו נתייג את המסגרת, קו אחר קו.</h1>
+          <p>בחרו תמונה, סמנו את המסגרת האדומה והמוטות ושמרו טיוטה. תמונות שמופיעות באתר מוגשות מ־GitHub ציבורי; קובץ שתבחרו מהמחשב יישאר מקומי עד שתעלו אותו לריפו.</p>
+        </div>
+        <div class="welcome-steps">
+          <div class="welcome-step"><span>1</span><strong>בוחרים תמונה</strong></div>
+          <div class="step-connector"></div>
+          <div class="welcome-step"><span>2</span><strong>מסמנים נקודות</strong></div>
+          <div class="step-connector"></div>
+          <div class="welcome-step"><span>3</span><strong>שומרים טיוטה</strong></div>
+        </div>
+      </section>
+
+      <section class="workspace" id="workspace">
+        <div class="workspace-toolbar">
+          <div class="image-heading">
+            <div class="photo-icon" aria-hidden="true">▧</div>
+            <div><h2 id="current-name">בחרו תמונה מהרשימה</h2><p id="image-meta">התמונה המקורית נשארת ללא שינוי</p></div>
+          </div>
+          <div class="toolbar-actions">
+            <button id="undo-button" class="secondary-button" disabled title="ביטול הפעולה האחרונה">↶ <span>ביטול</span></button>
+            <button id="redo-button" class="secondary-button" disabled title="החזרת פעולה שבוטלה">↷</button>
+            <button id="save-button" class="primary-button" disabled><span aria-hidden="true">✓</span> שמירת טיוטה</button>
+          </div>
+        </div>
+
+        <div class="progress-row">
+          <div class="progress-label"><span id="progress-text">בחרו תמונה כדי להתחיל</span><span id="progress-count">0/14 קווים</span></div>
+          <div class="progress-track"><div id="progress-bar"></div></div>
+        </div>
+
+        <div class="editor-layout">
+          <section class="image-stage" aria-label="תמונה עם שכבת תיוג">
+            <div class="stage-topline">
+              <span class="stage-label"><i></i> <span id="stage-status">ממתין לבחירת תמונה</span></span>
+              <div class="stage-tools">
+                <button id="zoom-out" class="tiny-button" aria-label="הקטנת תמונה">−</button>
+                <span id="zoom-level">התאם</span>
+                <button id="zoom-in" class="tiny-button" aria-label="הגדלת תמונה">+</button>
+                <button id="fit-button" class="tiny-button fit-button">התאם למסך</button>
+                <a id="preview-link" class="tiny-button preview-link" target="_blank" rel="noopener" hidden>תצוגה מסומנת ↗</a>
+              </div>
+            </div>
+            <div id="canvas-scroll" class="canvas-scroll">
+              <div id="image-wrap" class="image-wrap">
+                <div id="empty-state" class="empty-state">
+                  <div class="empty-illustration">▧</div>
+                  <h3>התמונה הראשונה מחכה לכם</h3>
+                  <p>בחרו תמונה מהרשימה בצד כדי להתחיל לסמן.</p>
+                </div>
+                <img id="source-image" alt="התמונה המקורית לתיוג" hidden>
+                <svg id="annotation-svg" role="img" aria-label="קווים ונקודות התיוג" hidden></svg>
+              </div>
+            </div>
+            <div class="canvas-footer">
+              <span><i class="legend-dot blue-dot"></i> נקודת קצה</span>
+              <span><i class="legend-line green-line"></i> מסגרת אדומה</span>
+              <span><i class="legend-line orange-line"></i> מוטות ברזל</span>
+              <span class="canvas-hint">לחצו על קו ברשימה ואז על התמונה כדי להציב שתי נקודות · גררו נקודה כחולה לתיקון</span>
+            </div>
+          </section>
+
+          <aside class="annotation-panel">
+            <div class="panel-heading">
+              <div><span class="eyebrow">לוח קווים</span><h3>מה מסמנים?</h3></div>
+              <div class="hive-actions">
+                <button id="remove-hive" class="add-hive-button remove-hive-button" title="הסרת המסגרת הנבחרת" disabled>− הסרה</button>
+                <button id="add-hive" class="add-hive-button" title="הוספת מסגרת נוספת">＋ מסגרת</button>
+              </div>
+            </div>
+            <div id="hive-tabs" class="hive-tabs" role="tablist" aria-label="בחירת מסגרת"></div>
+            <div id="metadata-card" class="metadata-card" hidden>
+              <div class="metadata-title">פרטי המסגרת <span>עוזר למודל להבדיל בין מסגרות</span></div>
+              <div class="metadata-fields">
+                <label>צבע
+                  <select id="hive-color"><option value="red">אדומה</option><option value="blue">כחולה</option></select>
+                </label>
+                <label>צד
+                  <select id="hive-side"><option value="left">שמאל</option><option value="right" selected>ימין</option></select>
+                </label>
+                <label>גובה
+                  <select id="hive-level"><option value="bottom">למטה</option><option value="top" selected>למעלה</option></select>
+                </label>
+              </div>
+            </div>
+            <div class="line-group-title"><span class="group-mark frame-mark"></span><strong>מסגרת אדומה</strong><small>10 קווים</small></div>
+            <div id="frame-lines" class="line-list"></div>
+            <div class="line-group-title"><span class="group-mark iron-mark"></span><strong>מוטות ברזל</strong><small>4 קווים</small></div>
+            <div id="iron-lines" class="line-list"></div>
+            <div class="selected-line-help"><span id="selected-line-help">בחרו שורה כדי לראות הסבר ולמקם נקודות.</span><button id="clear-line" class="clear-line-button" disabled>נקה קו</button></div>
+          </aside>
+        </div>
+
+        <div class="bottom-guidance">
+          <div class="tip-icon">✦</div>
+          <div><strong>טיפ לתיוג מדויק</strong><p>מקמו כל נקודה על קצה הקו עצמו. אם הקו מוסתר, סמנו רק מה שרואים בבירור; אל תנחשו נקודות נסתרות. אפשר להגדיל את התמונה ולגרור נקודות לאחר מכן.</p></div>
+          <button id="bottom-guide" class="text-button">למדריך המלא <span aria-hidden="true">←</span></button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="guide-dialog" class="guide-dialog">
+    <div class="dialog-header"><div><span class="eyebrow">מדריך מהיר</span><h2>איך מתייגים תמונה?</h2></div><button id="close-guide" class="icon-button" aria-label="סגירה">×</button></div>
+    <ol class="guide-steps">
+      <li><b>בחרו תמונה</b><span>הרשימה בצד מראה כמה תמונות כבר תויגו וכמה עוד מחכות.</span></li>
+      <li><b>בחרו קו</b><span>לכל קו יש הסבר. סמנו שתי נקודות קצה על התמונה. סדר הקליקים לא משנה.</span></li>
+      <li><b>תקנו לפי הצורך</b><span>גררו נקודה כחולה כדי לדייק. השתמשו בביטול/החזרה אם טעיתם.</span></li>
+      <li><b>שמרו טיוטה</b><span>הטיוטה ותמונה מסומנת נשמרות בתיקיית manual_review. הקבצים המקוריים לא משתנים.</span></li>
+      <li><b>אישור ואימון</b><span>התיוג נשאר טיוטה. אימון המודל ייעשה רק לאחר אישור מפורש של הסט הסופי.</span></li>
+    </ol>
+    <div class="guide-warning"><strong>חשוב:</strong> הקו הכתום מסמן מוט ברזל, והירוק את המסגרת האדומה. לא מסמנים את המעמד השחור או פריטים אחרים ברקע.</div>
+    <button id="guide-done" class="primary-button wide-button">הבנתי, נתחיל</button>
+  </dialog>
+  <script src="./app.js" defer></script>
+</body>
+</html>
