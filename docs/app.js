@@ -35,6 +35,19 @@ const elements = {
   guide: $("guide-dialog"),
 };
 
+const MODEL_LINE_ENDPOINTS = [
+  [[66, 54], [66, 157]],
+  [[123, 28], [123, 131]],
+  [[193, 54], [193, 157]],
+  [[250, 28], [250, 131]],
+  [[66, 157], [193, 157]],
+  [[123, 131], [250, 131]],
+  [[66, 54], [193, 54]],
+  [[123, 28], [250, 28]],
+  [[66, 54], [123, 28]],
+  [[193, 54], [250, 28]],
+];
+
 function currentImage() {
   return state.images.find((image) => image.name === state.currentName) || null;
 }
@@ -333,10 +346,65 @@ function renderEditor() {
   $("save-button").disabled = !state.hives.every((hive) => hive.points.every(Boolean));
   $("add-hive").disabled = state.hives.length >= 4;
   $("remove-hive").disabled = state.hives.length <= 1;
-  $("selected-line-help").textContent = state.lines[state.selectedLine]?.explanation || "בחרו שורה כדי לראות הסבר.";
+  renderSelectedLineHelp();
   $("clear-line").disabled = !state.hives[state.selectedHive].points
     .slice(state.selectedLine * 2, state.selectedLine * 2 + 2).some(Boolean);
   updateUndoButtons();
+}
+
+function renderSelectedLineHelp() {
+  const line = state.lines[state.selectedLine];
+  if (!line) return;
+  const number = String(state.selectedLine + 1).padStart(2, "0");
+  $("selected-line-title").textContent = `קו ${number} · ${line.name}`;
+  $("selected-line-help").textContent = line.explanation;
+  $("line-start-help").textContent = line.start || "קצה אחד של הקו";
+  $("line-end-help").textContent = line.end || "הקצה השני של הקו";
+  const model = $("frame-model");
+  model.querySelectorAll(".model-edge").forEach((edge) => {
+    const selected = Number(edge.dataset.modelLine) === state.selectedLine;
+    edge.classList.toggle("selected", selected);
+    edge.setAttribute("aria-pressed", String(selected));
+  });
+  const endpoints = $("model-endpoints");
+  endpoints.replaceChildren();
+  const positions = MODEL_LINE_ENDPOINTS[state.selectedLine];
+  if (positions) {
+    positions.forEach(([x, y], index) => {
+      const marker = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      marker.setAttribute("class", "model-endpoint");
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", x);
+      circle.setAttribute("cy", y);
+      circle.setAttribute("r", "7");
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", x);
+      label.setAttribute("y", y + 3);
+      label.textContent = index === 0 ? "A" : "B";
+      marker.append(circle, label);
+      endpoints.appendChild(marker);
+    });
+  }
+}
+
+function selectLine(index) {
+  state.selectedLine = index;
+  state.placementMode = true;
+  renderEditor();
+  showToast(`קו ${index + 1} נבחר — סמנו נקודה בכל קצה של הקו.`);
+}
+
+function bindFrameModel() {
+  $("frame-model").querySelectorAll(".model-edge").forEach((edge) => {
+    const select = () => selectLine(Number(edge.dataset.modelLine));
+    edge.addEventListener("click", select);
+    edge.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        select();
+      }
+    });
+  });
 }
 
 function renderHiveTabs() {
@@ -380,10 +448,7 @@ function renderLineList(from, to, target) {
   }).join("");
   target.querySelectorAll(".line-row").forEach((row) => {
     const select = () => {
-      state.selectedLine = Number(row.dataset.line);
-      state.placementMode = true;
-      renderEditor();
-      showToast(`קו ${state.selectedLine + 1} נבחר — לחצו על התמונה לשתי נקודות קצה.`);
+      selectLine(Number(row.dataset.line));
     };
     row.addEventListener("click", select);
     row.addEventListener("keydown", (event) => {
@@ -876,3 +941,4 @@ document.addEventListener("keydown", (event) => {
 });
 
 boot();
+bindFrameModel();

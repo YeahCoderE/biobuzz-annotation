@@ -134,11 +134,46 @@
                 </label>
               </div>
             </div>
+            <section class="frame-model-card" aria-labelledby="frame-model-title">
+              <div class="frame-model-heading">
+                <div><strong id="frame-model-title">המסגרת במבט תלת־ממדי</strong><small>המספרים תואמים לשורות. לחצו על קו במודל או ברשימה.</small></div>
+              </div>
+              <svg id="frame-model" class="frame-model" viewBox="0 0 320 198" role="group" aria-label="תרשים תלת ממדי של המסגרת האדומה">
+                <polygon class="model-face model-front-face" points="66,54 193,54 193,157 66,157"></polygon>
+                <polygon class="model-face model-side-face" points="193,54 250,28 250,131 193,157"></polygon>
+                <polygon class="model-face model-top-face" points="66,54 123,28 250,28 193,54"></polygon>
+                <g class="model-side-labels" aria-hidden="true">
+                  <text x="128" y="178">קדמי · קרוב למצלמה</text>
+                  <text x="245" y="83" transform="rotate(-90 245 83)">צד ימין</text>
+                  <text x="157" y="18">אחורי · רחוק מהמצלמה</text>
+                  <text x="38" y="105" transform="rotate(-90 38 105)">צד שמאל</text>
+                </g>
+                <g class="model-edge" data-model-line="0" role="button" tabindex="0" aria-label="בחירת קו 1: שמאל קדמי"><line x1="66" y1="54" x2="66" y2="157"></line><circle cx="66" cy="105" r="10"></circle><text x="66" y="108">01</text></g>
+                <g class="model-edge" data-model-line="1" role="button" tabindex="0" aria-label="בחירת קו 2: שמאל אחורי"><line x1="123" y1="28" x2="123" y2="131"></line><circle cx="123" cy="79" r="10"></circle><text x="123" y="82">02</text></g>
+                <g class="model-edge" data-model-line="2" role="button" tabindex="0" aria-label="בחירת קו 3: ימין קדמי"><line x1="193" y1="54" x2="193" y2="157"></line><circle cx="193" cy="105" r="10"></circle><text x="193" y="108">03</text></g>
+                <g class="model-edge" data-model-line="3" role="button" tabindex="0" aria-label="בחירת קו 4: ימין אחורי"><line x1="250" y1="28" x2="250" y2="131"></line><circle cx="250" cy="79" r="10"></circle><text x="250" y="82">04</text></g>
+                <g class="model-edge" data-model-line="4" role="button" tabindex="0" aria-label="בחירת קו 5: תחתון קדמי"><line x1="66" y1="157" x2="193" y2="157"></line><circle cx="129" cy="157" r="10"></circle><text x="129" y="160">05</text></g>
+                <g class="model-edge" data-model-line="5" role="button" tabindex="0" aria-label="בחירת קו 6: תחתון אחורי"><line x1="123" y1="131" x2="250" y2="131"></line><circle cx="187" cy="131" r="10"></circle><text x="187" y="134">06</text></g>
+                <g class="model-edge" data-model-line="6" role="button" tabindex="0" aria-label="בחירת קו 7: עליון קדמי"><line x1="66" y1="54" x2="193" y2="54"></line><circle cx="129" cy="54" r="10"></circle><text x="129" y="57">07</text></g>
+                <g class="model-edge" data-model-line="7" role="button" tabindex="0" aria-label="בחירת קו 8: עליון אחורי"><line x1="123" y1="28" x2="250" y2="28"></line><circle cx="187" cy="28" r="10"></circle><text x="187" y="31">08</text></g>
+                <g class="model-edge" data-model-line="8" role="button" tabindex="0" aria-label="בחירת קו 9: פינה עליונה שמאלית"><line x1="66" y1="54" x2="123" y2="28"></line><circle cx="95" cy="41" r="10"></circle><text x="95" y="44">09</text></g>
+                <g class="model-edge" data-model-line="9" role="button" tabindex="0" aria-label="בחירת קו 10: פינה עליונה ימנית"><line x1="193" y1="54" x2="250" y2="28"></line><circle cx="222" cy="41" r="10"></circle><text x="222" y="44">10</text></g>
+                <g id="model-endpoints" aria-hidden="true"></g>
+              </svg>
+              <p class="model-orientation-note">קדמי = הצד שפונה אליכם. אחורי = הצד שמאחוריו, רחוק מכם. ימין ושמאל נקבעים כשמסתכלים על הצד הקדמי.</p>
+            </section>
+            <div class="selected-line-help" aria-live="polite">
+              <div class="line-help-title">
+                <strong id="selected-line-title">בחרו קו כדי לראות איפה לסמן</strong>
+                <button id="clear-line" class="clear-line-button" disabled>נקה קו</button>
+              </div>
+              <p id="selected-line-help">סמנו נקודה אחת בכל קצה של הקו. סדר הלחיצות לא משנה.</p>
+              <div class="line-endpoints"><span><b>A</b><span id="line-start-help">קצה ראשון</span></span><span><b>B</b><span id="line-end-help">קצה שני</span></span></div>
+            </div>
             <div class="line-group-title"><span class="group-mark frame-mark"></span><strong>מסגרת אדומה</strong><small>10 קווים</small></div>
             <div id="frame-lines" class="line-list"></div>
             <div class="line-group-title"><span class="group-mark iron-mark"></span><strong>מוטות ברזל</strong><small>4 קווים</small></div>
             <div id="iron-lines" class="line-list"></div>
-            <div class="selected-line-help"><span id="selected-line-help">בחרו שורה כדי לראות הסבר ולמקם נקודות.</span><button id="clear-line" class="clear-line-button" disabled>נקה קו</button></div>
           </aside>
         </div>
 
