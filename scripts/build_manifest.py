@@ -1,3 +1,8 @@
+"""Build docs/images.json and small thumbnails for the annotation site.
+
+Line definitions live in docs/data/hive_model.json (single source of truth, matching
+LINES_INPUT_HE in main.py). They are copied into images.json for older tools.
+"""
 from __future__ import annotations
 
 import json
@@ -7,115 +12,65 @@ from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
-LINES = [
-    {
-        "name": "שמאל קדמי",
-        "explanation": "הקו האדום האנכי בפינה השמאלית של הצד שפונה למצלמה.",
-        "start": "הפינה העליונה השמאלית בצד הקרוב",
-        "end": "הפינה התחתונה השמאלית בצד הקרוב",
-    },
-    {
-        "name": "שמאל אחורי",
-        "explanation": "הקו האדום האנכי בפינה השמאלית של הצד הרחוק מהמצלמה.",
-        "start": "הפינה העליונה השמאלית בצד הרחוק",
-        "end": "הפינה התחתונה השמאלית בצד הרחוק",
-    },
-    {
-        "name": "ימין קדמי",
-        "explanation": "הקו האדום האנכי בפינה הימנית של הצד שפונה למצלמה.",
-        "start": "הפינה העליונה הימנית בצד הקרוב",
-        "end": "הפינה התחתונה הימנית בצד הקרוב",
-    },
-    {
-        "name": "ימין אחורי",
-        "explanation": "הקו האדום האנכי בפינה הימנית של הצד הרחוק מהמצלמה.",
-        "start": "הפינה העליונה הימנית בצד הרחוק",
-        "end": "הפינה התחתונה הימנית בצד הרחוק",
-    },
-    {
-        "name": "תחתון קדמי",
-        "explanation": "הקו האדום התחתון לרוחב הצד שפונה למצלמה.",
-        "start": "הפינה התחתונה השמאלית הקרובה",
-        "end": "הפינה התחתונה הימנית הקרובה",
-    },
-    {
-        "name": "תחתון אחורי",
-        "explanation": "הקו האדום התחתון לרוחב הצד הרחוק מהמצלמה.",
-        "start": "הפינה התחתונה השמאלית הרחוקה",
-        "end": "הפינה התחתונה הימנית הרחוקה",
-    },
-    {
-        "name": "עליון קדמי",
-        "explanation": "הקו האדום העליון לרוחב הצד שפונה אליכם — הצד הקרוב למצלמה. הוא מחבר בין הפינות העליונות הקרובות; אל תבחרו את הקו המקביל שמאחור.",
-        "start": "הפינה העליונה השמאלית הקרובה אליכם",
-        "end": "הפינה העליונה הימנית הקרובה אליכם",
-    },
-    {
-        "name": "עליון אחורי",
-        "explanation": "הקו האדום העליון המקביל, בצד הרחוק מכם — מאחורי המסגרת. הוא מחבר בין שתי הפינות העליונות הרחוקות.",
-        "start": "הפינה העליונה השמאלית הרחוקה מכם",
-        "end": "הפינה העליונה הימנית הרחוקה מכם",
-    },
-    {
-        "name": "פינה עליונה שמאלית",
-        "explanation": "הקו הקצר בחלק העליון שמחבר את הפינה השמאלית הקרובה אליכם לפינה השמאלית הרחוקה — בכיוון העומק.",
-        "start": "הפינה העליונה השמאלית הקרובה אליכם",
-        "end": "הפינה העליונה השמאלית הרחוקה מכם",
-    },
-    {
-        "name": "פינה עליונה ימנית",
-        "explanation": "הקו הקצר בחלק העליון שמחבר את הפינה הימנית הקרובה אליכם לפינה הימנית הרחוקה — בכיוון העומק.",
-        "start": "הפינה העליונה הימנית הקרובה אליכם",
-        "end": "הפינה העליונה הימנית הרחוקה מכם",
-    },
-    {
-        "name": "ברזל תחתון — צד שמאל",
-        "explanation": "מוט הברזל התחתון משמאל; סמנו את שני קצות המוט, ואם חלק ממנו מוסתר סמנו את הקצוות הגלויים בלבד.",
-        "start": "קצה גלוי אחד של המוט",
-        "end": "הקצה הגלוי השני של המוט",
-    },
-    {
-        "name": "ברזל תחתון — צד ימין",
-        "explanation": "מוט הברזל התחתון מימין; סמנו את שני קצות המוט, ואם חלק ממנו מוסתר סמנו את הקצוות הגלויים בלבד.",
-        "start": "קצה גלוי אחד של המוט",
-        "end": "הקצה הגלוי השני של המוט",
-    },
-    {
-        "name": "ברזל צד שמאל",
-        "explanation": "מוט הברזל בצד שמאל של המסגרת. סמנו את שני הקצוות הנראים שלו.",
-        "start": "קצה גלוי אחד של המוט",
-        "end": "הקצה הגלוי השני של המוט",
-    },
-    {
-        "name": "ברזל צד ימין",
-        "explanation": "מוט הברזל בצד ימין של המסגרת. סמנו את שני הקצוות הנראים שלו.",
-        "start": "קצה גלוי אחד של המוט",
-        "end": "הקצה הגלוי השני של המוט",
-    },
-]
-
 IMAGE_DIR = ROOT / "docs" / "images"
+THUMB_DIR = ROOT / "docs" / "thumbs"
+MODEL_FILE = ROOT / "docs" / "data" / "hive_model.json"
 OUTPUT = ROOT / "docs" / "images.json"
+THUMB_SIZE = (240, 180)
+
+
+def load_lines() -> list[dict]:
+    model = json.loads(MODEL_FILE.read_text(encoding="utf-8"))
+    corners = model["corners"]
+
+    def corner_text(corner_id: str) -> str:
+        info = corners[corner_id]
+        return f"{info['name']} · מסגרת {info['frame']}"
+
+    return [
+        {
+            "id": line["id"],
+            "name": line["name"],
+            "explanation": line["explanation"],
+            "start": corner_text(line["a"]),
+            "end": corner_text(line["b"]),
+            "a": line["a"],
+            "b": line["b"],
+            "kind": line["kind"],
+        }
+        for line in model["lines"]
+    ]
+
+
+def make_thumbnail(path: Path, image: Image.Image) -> str:
+    THUMB_DIR.mkdir(parents=True, exist_ok=True)
+    thumb_name = f"{path.stem}_{path.suffix[1:].lower()}.jpg"
+    thumb_path = THUMB_DIR / thumb_name
+    if not thumb_path.exists() or thumb_path.stat().st_mtime < path.stat().st_mtime:
+        thumb = image.convert("RGB")
+        thumb.thumbnail(THUMB_SIZE, Image.Resampling.LANCZOS)
+        thumb.save(thumb_path, "JPEG", quality=78, optimize=True)
+    return thumb_name
 
 
 def main() -> None:
     images = []
+    expected_thumbs = set()
     for path in sorted(IMAGE_DIR.iterdir(), key=lambda item: item.name.lower()):
         if not path.is_file() or path.suffix.lower() not in SUPPORTED_EXTENSIONS:
             continue
         with Image.open(path) as source:
             image = ImageOps.exif_transpose(source)
-            images.append({
-                "name": path.name,
-                "width": image.width,
-                "height": image.height,
-            })
-    payload = {
-        "images": images,
-        "lines": LINES,
-    }
+            thumb = make_thumbnail(path, image)
+            expected_thumbs.add(thumb)
+            images.append({"name": path.name, "width": image.width, "height": image.height, "thumb": thumb})
+    if THUMB_DIR.exists():
+        for stale in THUMB_DIR.glob("*.jpg"):
+            if stale.name not in expected_thumbs:
+                stale.unlink()
+    payload = {"images": images, "lines": load_lines()}
     OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Wrote {len(images)} images to {OUTPUT.relative_to(ROOT)}")
+    print(f"Wrote {len(images)} images and thumbnails to {OUTPUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

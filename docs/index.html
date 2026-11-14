@@ -3,202 +3,226 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f7fb">
-  <title>BioBuzz | סביבת תיוג</title>
+  <meta name="theme-color" content="#0f172a">
+  <title>BioBuzz Hive Studio</title>
+  <meta name="description" content="סטודיו לתיוג כוורות BIOBUZZ: מודל תלת־ממדי מדויק, 14 קווים, נעילה ונוכחות בזמן אמת.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./app.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar">
-      <a class="brand" href="#" aria-label="BioBuzz - דף הבית">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span><strong>BioBuzz</strong><small>סטודיו לתיוג תמונות</small></span>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="BioBuzz Hive Studio">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4 34 12v16L20 36 6 28V12z" /><path d="M13 23h14v6H13zM20 12l7 5v6H13v-6z" class="brand-hive" /></svg></span>
+        <span class="brand-copy"><strong>BioBuzz Hive Studio</strong><small>תיוג כוורות FTC · BIOBUZZ 2026–27</small></span>
       </a>
-      <div class="sidebar-section">
-        <div class="section-title"><span>התמונות שלך</span><span id="image-count" class="count-pill">—</span></div>
-        <button id="upload-images" class="upload-images-button">＋ העלאת תמונות מהמחשב</button>
-        <input id="image-upload" type="file" accept="image/*" multiple hidden>
-        <button id="export-drafts" class="export-drafts-button">↓ ייצוא הטיוטות למחשב</button>
-        <button id="import-drafts" class="export-drafts-button">↑ ייבוא טיוטות</button>
-        <input id="draft-upload" type="file" accept="application/json,.json" hidden>
-        <label class="search-box">
-          <span aria-hidden="true">⌕</span>
-          <input id="image-search" type="search" placeholder="חיפוש תמונה..." aria-label="חיפוש תמונה">
-        </label>
-        <div class="filter-row" role="group" aria-label="סינון תמונות">
-          <button class="filter active" data-filter="all">הכול</button>
-          <button class="filter" data-filter="todo">ממתינות</button>
-          <button class="filter" data-filter="review">טיוטות</button>
+      <div class="live-zone">
+        <div id="connection" class="connection" data-status="connecting"><i></i><span>מתחבר…</span></div>
+        <div id="presence" class="presence" aria-label="מי מחובר עכשיו"></div>
+        <small id="online-count" class="online-count"></small>
+      </div>
+      <div class="topbar-actions">
+        <button id="open-tour" class="tour-button" title="הדגמה תלת־ממדית"><span aria-hidden="true">🧊</span> <span class="label-long">הדגמה תלת־ממדית</span><span class="label-short">3D</span></button>
+        <button id="guide-button" class="icon-button" title="מדריך" aria-label="מדריך">?</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <div class="section-title"><span>תמונות</span><span id="image-count" class="count-pill">—</span></div>
+          <div class="overall"><div class="overall-track"><div id="overall-progress"></div></div><small id="overall-text"></small></div>
+          <label class="search-box"><span aria-hidden="true">⌕</span><input id="image-search" type="search" placeholder="חיפוש תמונה…" aria-label="חיפוש תמונה"></label>
+          <div class="filter-row" role="group" aria-label="סינון">
+            <button class="filter active" data-filter="all">הכול</button>
+            <button class="filter" data-filter="todo">ממתינות</button>
+            <button class="filter" data-filter="review">תויגו</button>
+            <button class="filter" data-filter="web">🌐 מהרשת</button>
+          </div>
         </div>
         <div id="image-list" class="image-list" aria-live="polite"></div>
-      </div>
-      <div class="sidebar-bottom">
-        <div class="privacy-note"><span class="privacy-icon">!</span><span><strong>האתר ציבורי</strong><small>קובצי הריפו גלויים לכולם</small></span></div>
-        <button id="open-guide" class="text-button">איך משתמשים? <span aria-hidden="true">←</span></button>
-      </div>
-    </aside>
-
-    <main class="main-content">
-      <header class="topbar">
-        <div class="breadcrumbs"><span>סביבת עבודה</span><b>/</b><strong>תיוג ידני</strong></div>
-        <div class="topbar-actions">
-          <span class="local-badge"><i></i> רץ במחשב שלך</span>
-          <button class="icon-button" id="guide-button" title="הסבר על התיוג" aria-label="הסבר על התיוג">?</button>
+        <div class="sidebar-foot">
+          <button id="upload-images" class="foot-button" title="להוסיף תמונות מהמחשב (רק לדפדפן הזה)">＋ העלאה</button>
+          <button id="export-drafts" class="foot-button" title="להוריד את כל הטיוטות כקובץ annotations_review.json">↓ ייצוא</button>
+          <button id="import-drafts" class="foot-button" title="לטעון קובץ טיוטות">↑ ייבוא</button>
+          <input id="image-upload" type="file" accept="image/*" multiple hidden>
+          <input id="draft-upload" type="file" accept="application/json,.json" hidden>
+          <button id="open-guide" class="text-button">איך מתייגים? ←</button>
         </div>
-      </header>
+      </aside>
 
-      <section class="welcome-strip" id="welcome-strip">
-        <div class="welcome-copy">
-          <span class="eyebrow">מתחילים פשוט</span>
-          <h1>בואו נתייג את המסגרת, קו אחר קו.</h1>
-          <p>בחרו תמונה, סמנו את המסגרת האדומה והמוטות ושמרו טיוטה. תמונות שמופיעות באתר מוגשות מ־GitHub ציבורי; קובץ שתבחרו מהמחשב יישאר מקומי עד שתעלו אותו לריפו.</p>
-        </div>
-        <div class="welcome-steps">
-          <div class="welcome-step"><span>1</span><strong>בוחרים תמונה</strong></div>
-          <div class="step-connector"></div>
-          <div class="welcome-step"><span>2</span><strong>מסמנים נקודות</strong></div>
-          <div class="step-connector"></div>
-          <div class="welcome-step"><span>3</span><strong>שומרים טיוטה</strong></div>
-        </div>
-      </section>
-
-      <section class="workspace" id="workspace">
-        <div class="workspace-toolbar">
+      <main class="workspace">
+        <div class="toolbar">
           <div class="image-heading">
-            <div class="photo-icon" aria-hidden="true">▧</div>
-            <div><h2 id="current-name">בחרו תמונה מהרשימה</h2><p id="image-meta">התמונה המקורית נשארת ללא שינוי</p></div>
+            <button id="next-image" class="nav-button" title="התמונה הבאה (←)" aria-label="התמונה הבאה">‹</button>
+            <div class="image-title"><h1 id="current-name">טוען…</h1><p id="image-meta"></p></div>
+            <button id="prev-image" class="nav-button" title="התמונה הקודמת (→)" aria-label="התמונה הקודמת">›</button>
           </div>
           <div class="toolbar-actions">
-            <button id="undo-button" class="secondary-button" disabled title="ביטול הפעולה האחרונה">↶ <span>ביטול</span></button>
-            <button id="redo-button" class="secondary-button" disabled title="החזרת פעולה שבוטלה">↷</button>
-            <button id="save-button" class="primary-button" disabled><span aria-hidden="true">✓</span> שמירת טיוטה</button>
+            <button id="undo-button" class="secondary-button" title="ביטול (Ctrl+Z)" disabled>↶</button>
+            <button id="redo-button" class="secondary-button" title="החזרה (Ctrl+Y)" disabled>↷</button>
+            <button id="autocomplete-button" class="secondary-button magic" title="משלים נקודות מוסתרות לפי הצורה התלת־ממדית (A)" disabled>✨ השלמה חכמה</button>
+            <button id="save-button" class="primary-button" title="שמירה (Ctrl+S)" disabled>✓ שמירת טיוטה</button>
           </div>
         </div>
-
+        <div id="lock-banner" class="lock-banner" hidden></div>
         <div class="progress-row">
-          <div class="progress-label"><span id="progress-text">בחרו תמונה כדי להתחיל</span><span id="progress-count">0/14 קווים</span></div>
+          <div class="progress-label"><span id="progress-text"></span><span id="progress-count"></span></div>
           <div class="progress-track"><div id="progress-bar"></div></div>
         </div>
 
-        <div class="editor-layout">
-          <section class="image-stage" aria-label="תמונה עם שכבת תיוג">
+        <div class="editor">
+          <section id="image-stage" class="image-stage" aria-label="התמונה ושכבת התיוג">
             <div class="stage-topline">
-              <span class="stage-label"><i></i> <span id="stage-status">ממתין לבחירת תמונה</span></span>
+              <div class="mode-switch" role="tablist" aria-label="מצב סימון">
+                <button data-mode="corners" class="active" title="10 לחיצות ממלאות את כל 28 הנקודות (C)">◆ פינות</button>
+                <button data-mode="lines" title="קו אחר קו: A ואז B (L)">╱ קווים</button>
+              </div>
               <div class="stage-tools">
-                <button id="zoom-out" class="tiny-button" aria-label="הקטנת תמונה">−</button>
+                <button id="zoom-out" class="tiny-button" aria-label="הקטנה">−</button>
                 <span id="zoom-level">התאם</span>
-                <button id="zoom-in" class="tiny-button" aria-label="הגדלת תמונה">+</button>
-                <button id="fit-button" class="tiny-button fit-button">התאם למסך</button>
-                <a id="preview-link" class="tiny-button preview-link" target="_blank" rel="noopener" hidden>תצוגה מסומנת ↗</a>
+                <button id="zoom-in" class="tiny-button" aria-label="הגדלה">+</button>
+                <button id="fit-button" class="tiny-button wide">התאם למסך</button>
               </div>
             </div>
             <div id="canvas-scroll" class="canvas-scroll">
               <div id="image-wrap" class="image-wrap">
-                <div id="empty-state" class="empty-state">
-                  <div class="empty-illustration">▧</div>
-                  <h3>התמונה הראשונה מחכה לכם</h3>
-                  <p>בחרו תמונה מהרשימה בצד כדי להתחיל לסמן.</p>
-                </div>
-                <img id="source-image" alt="התמונה המקורית לתיוג" hidden>
+                <div id="empty-state" class="empty-state"><div class="spinner"></div><p>טוען תמונה…</p></div>
+                <img id="source-image" alt="התמונה לתיוג" hidden>
                 <svg id="annotation-svg" role="img" aria-label="קווים ונקודות התיוג" hidden></svg>
+                <div id="remote-cursor" class="remote-cursor" hidden><svg viewBox="0 0 16 16"><path d="M1 1l5 14 2-6 6-2z" /></svg><span></span></div>
               </div>
             </div>
+            <canvas id="loupe" class="loupe" hidden></canvas>
             <div class="canvas-footer">
-              <span><i class="legend-dot blue-dot"></i> נקודת קצה</span>
-              <span><i class="legend-line green-line"></i> מסגרת אדומה</span>
-              <span><i class="legend-line orange-line"></i> מוטות ברזל</span>
-              <span class="canvas-hint">לחצו על קו ברשימה ואז על התמונה כדי להציב שתי נקודות · גררו נקודה כחולה לתיקון</span>
+              <span><i class="legend-line kind-frame"></i> מסגרות</span>
+              <span><i class="legend-line kind-depth"></i> חיבור תחתון</span>
+              <span><i class="legend-line kind-iron"></i> מוט ברזל</span>
+              <span><i class="legend-line est"></i> הערכה</span>
+              <span class="canvas-hint">Ctrl+גלגלת = זום · גררו נקודה לתיקון · Alt = בלי הצמדה</span>
             </div>
           </section>
 
-          <aside class="annotation-panel">
-            <div class="panel-heading">
-              <div><span class="eyebrow">לוח קווים</span><h3>מה מסמנים?</h3></div>
-              <div class="hive-actions">
-                <button id="remove-hive" class="add-hive-button remove-hive-button" title="הסרת המסגרת הנבחרת" disabled>− הסרה</button>
-                <button id="add-hive" class="add-hive-button" title="הוספת מסגרת נוספת">＋ מסגרת</button>
+          <aside class="panel">
+            <section class="viewer-card">
+              <div id="viewer3d" class="viewer3d" aria-label="מודל תלת־ממדי של הכוורת"></div>
+              <div class="viewer-tools">
+                <button id="view-reset" class="tiny-button" title="איפוס מבט">⟲</button>
+                <button id="dims-toggle" class="tiny-button" title="הצגת מידות">📏</button>
+                <button id="viewer-expand" class="tiny-button wide" title="הדגמה במסך מלא">⛶ הדגמה</button>
               </div>
-            </div>
-            <div id="hive-tabs" class="hive-tabs" role="tablist" aria-label="בחירת מסגרת"></div>
-            <div id="metadata-card" class="metadata-card" hidden>
-              <div class="metadata-title">פרטי המסגרת <span>עוזר למודל להבדיל בין מסגרות</span></div>
-              <div class="metadata-fields">
-                <label>צבע
-                  <select id="hive-color"><option value="red">אדומה</option><option value="blue">כחולה</option></select>
-                </label>
-                <label>צד
-                  <select id="hive-side"><option value="left">שמאל</option><option value="right" selected>ימין</option></select>
-                </label>
-                <label>גובה
-                  <select id="hive-level"><option value="bottom">למטה</option><option value="top" selected>למעלה</option></select>
-                </label>
-              </div>
-            </div>
-            <section class="frame-model-card" aria-labelledby="frame-model-title">
-              <div class="frame-model-heading">
-                <div><strong id="frame-model-title">המסגרת במבט תלת־ממדי</strong><small>המספרים תואמים לשורות. לחצו על קו במודל או ברשימה.</small></div>
-              </div>
-              <svg id="frame-model" class="frame-model" viewBox="0 0 320 198" role="group" aria-label="תרשים תלת ממדי של המסגרת האדומה">
-                <polygon class="model-face model-front-face" points="66,54 193,54 193,157 66,157"></polygon>
-                <polygon class="model-face model-side-face" points="193,54 250,28 250,131 193,157"></polygon>
-                <polygon class="model-face model-top-face" points="66,54 123,28 250,28 193,54"></polygon>
-                <g class="model-side-labels" aria-hidden="true">
-                  <text x="128" y="178">קדמי · קרוב למצלמה</text>
-                  <text x="245" y="83" transform="rotate(-90 245 83)">צד ימין</text>
-                  <text x="157" y="18">אחורי · רחוק מהמצלמה</text>
-                  <text x="38" y="105" transform="rotate(-90 38 105)">צד שמאל</text>
-                </g>
-                <g class="model-edge" data-model-line="0" role="button" tabindex="0" aria-label="בחירת קו 1: שמאל קדמי"><line x1="66" y1="54" x2="66" y2="157"></line><circle cx="66" cy="105" r="10"></circle><text x="66" y="108">01</text></g>
-                <g class="model-edge" data-model-line="1" role="button" tabindex="0" aria-label="בחירת קו 2: שמאל אחורי"><line x1="123" y1="28" x2="123" y2="131"></line><circle cx="123" cy="79" r="10"></circle><text x="123" y="82">02</text></g>
-                <g class="model-edge" data-model-line="2" role="button" tabindex="0" aria-label="בחירת קו 3: ימין קדמי"><line x1="193" y1="54" x2="193" y2="157"></line><circle cx="193" cy="105" r="10"></circle><text x="193" y="108">03</text></g>
-                <g class="model-edge" data-model-line="3" role="button" tabindex="0" aria-label="בחירת קו 4: ימין אחורי"><line x1="250" y1="28" x2="250" y2="131"></line><circle cx="250" cy="79" r="10"></circle><text x="250" y="82">04</text></g>
-                <g class="model-edge" data-model-line="4" role="button" tabindex="0" aria-label="בחירת קו 5: תחתון קדמי"><line x1="66" y1="157" x2="193" y2="157"></line><circle cx="129" cy="157" r="10"></circle><text x="129" y="160">05</text></g>
-                <g class="model-edge" data-model-line="5" role="button" tabindex="0" aria-label="בחירת קו 6: תחתון אחורי"><line x1="123" y1="131" x2="250" y2="131"></line><circle cx="187" cy="131" r="10"></circle><text x="187" y="134">06</text></g>
-                <g class="model-edge" data-model-line="6" role="button" tabindex="0" aria-label="בחירת קו 7: עליון קדמי"><line x1="66" y1="54" x2="193" y2="54"></line><circle cx="129" cy="54" r="10"></circle><text x="129" y="57">07</text></g>
-                <g class="model-edge" data-model-line="7" role="button" tabindex="0" aria-label="בחירת קו 8: עליון אחורי"><line x1="123" y1="28" x2="250" y2="28"></line><circle cx="187" cy="28" r="10"></circle><text x="187" y="31">08</text></g>
-                <g class="model-edge" data-model-line="8" role="button" tabindex="0" aria-label="בחירת קו 9: פינה עליונה שמאלית"><line x1="66" y1="54" x2="123" y2="28"></line><circle cx="95" cy="41" r="10"></circle><text x="95" y="44">09</text></g>
-                <g class="model-edge" data-model-line="9" role="button" tabindex="0" aria-label="בחירת קו 10: פינה עליונה ימנית"><line x1="193" y1="54" x2="250" y2="28"></line><circle cx="222" cy="41" r="10"></circle><text x="222" y="44">10</text></g>
-                <g id="model-endpoints" aria-hidden="true"></g>
-              </svg>
-              <p class="model-orientation-note">קדמי = הצד שפונה אליכם. אחורי = הצד שמאחוריו, רחוק מכם. ימין ושמאל נקבעים כשמסתכלים על הצד הקדמי.</p>
+              <div class="viewer-hint">גררו לסיבוב · לחצו על קו כדי לבחור אותו</div>
             </section>
-            <div class="selected-line-help" aria-live="polite">
-              <div class="line-help-title">
-                <strong id="selected-line-title">בחרו קו כדי לראות איפה לסמן</strong>
-                <button id="clear-line" class="clear-line-button" disabled>נקה קו</button>
+
+            <section id="task-card" class="task-card" aria-live="polite"></section>
+
+            <section class="hive-card">
+              <div class="hive-card-head">
+                <div id="hive-tabs" class="hive-tabs" role="tablist" aria-label="בחירת כוורת"></div>
+                <div class="hive-actions">
+                  <button id="remove-hive" class="tiny-button" title="הסרת הכוורת הנבחרת">−</button>
+                  <button id="add-hive" class="tiny-button wide" title="עוד כוורת בתמונה">＋ כוורת</button>
+                </div>
               </div>
-              <p id="selected-line-help">סמנו נקודה אחת בכל קצה של הקו. סדר הלחיצות לא משנה.</p>
-              <div class="line-endpoints"><span><b>A</b><span id="line-start-help">קצה ראשון</span></span><span><b>B</b><span id="line-end-help">קצה שני</span></span></div>
-            </div>
-            <div class="line-group-title"><span class="group-mark frame-mark"></span><strong>מסגרת אדומה</strong><small>10 קווים</small></div>
-            <div id="frame-lines" class="line-list"></div>
-            <div class="line-group-title"><span class="group-mark iron-mark"></span><strong>מוטות ברזל</strong><small>4 קווים</small></div>
-            <div id="iron-lines" class="line-list"></div>
+              <div class="metadata-fields">
+                <label>צבע<select id="hive-color"><option value="red">אדומה</option><option value="blue">כחולה</option></select></label>
+                <label>צד<select id="hive-side"><option value="left">שמאל</option><option value="right">ימין</option></select></label>
+                <label>מיקום<select id="hive-level"><option value="bottom">למטה</option><option value="top">למעלה</option></select></label>
+              </div>
+            </section>
+
+            <section id="check-card" class="check-card"></section>
+            <section id="line-groups" class="line-groups"></section>
+
+            <details class="rules-card">
+              <summary>כללי הזהב לתיוג</summary>
+              <ul id="rules-list"></ul>
+              <button id="open-tour-2" class="text-button">לסיור התלת־ממדי המלא ←</button>
+            </details>
           </aside>
         </div>
-
-        <div class="bottom-guidance">
-          <div class="tip-icon">✦</div>
-          <div><strong>טיפ לתיוג מדויק</strong><p>מקמו כל נקודה על קצה הקו עצמו. אם הקו מוסתר, סמנו רק מה שרואים בבירור; אל תנחשו נקודות נסתרות. אפשר להגדיל את התמונה ולגרור נקודות לאחר מכן.</p></div>
-          <button id="bottom-guide" class="text-button">למדריך המלא <span aria-hidden="true">←</span></button>
-        </div>
-      </section>
-    </main>
+      </main>
+    </div>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <dialog id="guide-dialog" class="guide-dialog">
-    <div class="dialog-header"><div><span class="eyebrow">מדריך מהיר</span><h2>איך מתייגים תמונה?</h2></div><button id="close-guide" class="icon-button" aria-label="סגירה">×</button></div>
-    <ol class="guide-steps">
-      <li><b>בחרו תמונה</b><span>הרשימה בצד מראה כמה תמונות כבר תויגו וכמה עוד מחכות.</span></li>
-      <li><b>בחרו קו</b><span>לכל קו יש הסבר. סמנו שתי נקודות קצה על התמונה. סדר הקליקים לא משנה.</span></li>
-      <li><b>תקנו לפי הצורך</b><span>גררו נקודה כחולה כדי לדייק. השתמשו בביטול/החזרה אם טעיתם.</span></li>
-      <li><b>שמרו טיוטה</b><span>הטיוטה ותמונה מסומנת נשמרות בתיקיית manual_review. הקבצים המקוריים לא משתנים.</span></li>
-      <li><b>אישור ואימון</b><span>התיוג נשאר טיוטה. אימון המודל ייעשה רק לאחר אישור מפורש של הסט הסופי.</span></li>
-    </ol>
-    <div class="guide-warning"><strong>חשוב:</strong> הקו הכתום מסמן מוט ברזל, והירוק את המסגרת האדומה. לא מסמנים את המעמד השחור או פריטים אחרים ברקע.</div>
-    <button id="guide-done" class="primary-button wide-button">הבנתי, נתחיל</button>
+  <section id="tour" class="tour" hidden aria-label="הדגמה תלת־ממדית של הכוורת">
+    <div class="tour-stage">
+      <div id="tour-viewer" class="tour-viewer"></div>
+      <div class="tour-caption">
+        <div class="tour-progress"><div id="tour-progress"></div></div>
+        <span id="tour-kicker" class="tour-kicker"></span>
+        <h2 id="tour-title"></h2>
+        <p id="tour-text"></p>
+        <div id="tour-ends" class="tour-ends" hidden>
+          <div><b>A</b><span id="tour-a"></span></div>
+          <div><b>B</b><span id="tour-b"></span></div>
+        </div>
+        <div class="tour-controls">
+          <button id="tour-next" class="secondary-button">הבא ←</button>
+          <button id="tour-play" class="primary-button">▶ הפעלה</button>
+          <button id="tour-prev" class="secondary-button">→ הקודם</button>
+          <button id="tour-practice" class="text-button">לתייג את הקו הזה</button>
+        </div>
+      </div>
+    </div>
+    <aside class="tour-side">
+      <div class="tour-side-head"><strong>מדריך הכוורת</strong><button id="tour-close" class="icon-button" aria-label="סגירה">×</button></div>
+      <div id="tour-steps" class="tour-steps"></div>
+      <a class="tour-drawing" href="./guide/cell_dimensions.jpg" target="_blank" rel="noopener" title="השרטוט הרשמי של התא — איור 9-11">
+        <img src="./guide/cell_dimensions.jpg" alt="השרטוט הרשמי של מסגרת התא: רוחב 20 אינץ׳, קירות 7.61, שיא 14" loading="lazy">
+        <span>השרטוט הרשמי (איור 9-11) ↗</span>
+      </a>
+      <p class="tour-source">המידות מתוך המדריך הרשמי של FTC BIOBUZZ (איורים 9-9 ו־9-11) ומדריך ההרכבה של AndyMark.</p>
+    </aside>
+  </section>
+
+  <dialog id="name-dialog" class="dialog small-dialog">
+    <form id="name-form" method="dialog">
+      <span class="eyebrow">זמן אמת</span>
+      <h2>איך לקרוא לך?</h2>
+      <p>השם יופיע ליד התמונה שאת/ה עובד/ת עליה, כדי שאחרים יידעו שהיא תפוסה.</p>
+      <input id="name-input" maxlength="32" autocomplete="nickname" placeholder="למשל: איתן" required>
+      <div class="dialog-actions">
+        <button type="submit" class="primary-button">שמירה</button>
+        <button type="button" id="name-skip" class="text-button">להמשיך כאורח</button>
+      </div>
+    </form>
   </dialog>
-  <script src="./app.js" defer></script>
+
+  <dialog id="guide-dialog" class="dialog">
+    <div class="dialog-header"><div><span class="eyebrow">מדריך מהיר</span><h2>איך מתייגים כוורת?</h2></div><button id="close-guide" class="icon-button" aria-label="סגירה">×</button></div>
+    <ol class="guide-steps">
+      <li><b>בוחרים תמונה</b><span>אם מישהו כבר עובד עליה, מופיע מנעול עם השם שלו. אפשר לצפות בה, אבל לא לערוך.</span></li>
+      <li><b>מסמנים 10 פינות</b><span>במצב ״פינות״ לוחצים לפי הסדר שמוצג, וכל לחיצה ממלאת כמה קווים בבת אחת. 10 לחיצות ממלאות את כל 28 הנקודות.</span></li>
+      <li><b>פינה מוסתרת?</b><span>מדלגים עליה (S), ובסוף לוחצים ״השלמה חכמה״ (A). האתר מחשב אותה מהצורה התלת־ממדית האמיתית של הכוורת.</span></li>
+      <li><b>בודקים</b><span>״בדיקת הדיוק״ מראה פינות שלא נפגשות ונקודות שלא מתאימות לצורה. במצב ״קווים״ גוררים נקודה לתיקון.</span></li>
+      <li><b>שומרים</b><span>הטיוטה נשמרת בדפדפן ומסונכרנת לכל המכשירים שמחוברים לאתר. ״ייצוא״ מוריד את annotations_review.json לאימון.</span></li>
+    </ol>
+    <h3 class="guide-sub">כללי הזהב</h3>
+    <ul id="guide-rules" class="guide-rules"></ul>
+    <h3 class="guide-sub">קיצורי מקלדת</h3>
+    <div class="shortcuts">
+      <span><kbd>C</kbd>/<kbd>L</kbd> פינות/קווים</span><span><kbd>S</kbd> דילוג על פינה</span><span><kbd>A</kbd> השלמה חכמה</span>
+      <span><kbd>N</kbd>/<kbd>P</kbd> קו הבא/הקודם</span><span><kbd>X</kbd> החלפת A/B</span><span><kbd>Del</kbd> ניקוי קו</span>
+      <span><kbd>Ctrl</kbd>+<kbd>Z</kbd> ביטול</span><span><kbd>Ctrl</kbd>+<kbd>S</kbd> שמירה</span><span><kbd>←</kbd>/<kbd>→</kbd> תמונה הבאה/קודמת</span>
+    </div>
+    <div class="dialog-actions">
+      <button id="guide-tour" class="secondary-button">🧊 לסיור התלת־ממדי</button>
+      <button id="guide-done" class="primary-button">הבנתי, מתחילים</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
