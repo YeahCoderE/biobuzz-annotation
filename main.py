@@ -724,14 +724,55 @@ def add_or_replace_record(records, record):
 # Labeling flow
 # ============================================================
 
+DETECTOR_FILE = PROJECT_DIR / "models" / "biobuzz_hive.onnx"
+if not DETECTOR_FILE.exists():
+    DETECTOR_FILE = PROJECT_DIR / "docs" / "models" / "biobuzz_hive.onnx"
+_detector = None
+
+
+def detector_proposals(image):
+    """Hive proposals from the trained BIOBUZZ detector (models/biobuzz_hive.onnx), if present.
+
+    Returns the same structure as predict_with_onnx: metadata [blue, right, top], 28 points in
+    original pixels (main.py line order) and a confidence, or None when the detector is missing.
+    """
+    global _detector
+    if not DETECTOR_FILE.exists():
+        return None
+    try:
+        sys.path.insert(0, str(PROJECT_DIR / "tools"))
+        import detect as hive_detect
+        if _detector is None:
+            _detector = hive_detect.load_model(DETECTOR_FILE)
+        cells = hive_detect.detect_image(_detector, image)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Detector unavailable: {exc}")
+        return None
+    proposals = []
+    for cell in cells[:MAX_HIVES]:
+        points = [point for line in cell["lines"] for point in (line["a"], line["b"])]
+        proposals.append({
+            "metadata": [
+                1.0 if cell["color"] == "blue" else 0.0,
+                1.0 if cell["side"] == "right" else 0.0,
+                1.0 if cell["level"] == "top" else 0.0,
+            ],
+            "points": points,
+            "confidence": cell["confidence"],
+        })
+    return proposals
+
+
 def label_single_image(image_path, root):
     image = load_any_image_format(image_path)
     if image is None:
         messagebox.showerror("Image error", f"Cannot load:\n{image_path}")
         return None
 
-    predicted_hives = []
-    if MODEL_FILE.exists() and not ONNX_FILE.exists():
+    predicted_hives = detector_proposals(image) or []
+    if predicted_hives:
+        pass
+    elif MODEL_FILE.exists() and not ONNX_FILE.exists():
         try:
             export_onnx()
         except Exception as exc:
@@ -741,7 +782,7 @@ def label_single_image(image_path, root):
             )
             return None
 
-    if ONNX_FILE.exists():
+    if not predicted_hives and ONNX_FILE.exists():
         try:
             predicted_hives = predict_with_onnx(
                 image, include_best_candidate=True
@@ -1376,11 +1417,12 @@ def review_prediction(image, hive_data, hive_index):
 
 
 def try_model(root):
-    try:
-        ensure_onnx_model()
-    except Exception as exc:
-        messagebox.showerror("ONNX model unavailable", str(exc), parent=root)
-        return
+    if not DETECTOR_FILE.exists():
+        try:
+            ensure_onnx_model()
+        except Exception as exc:
+            messagebox.showerror("ONNX model unavailable", str(exc), parent=root)
+            return
 
     image_path = filedialog.askopenfilename(
         title="Select an image to test the ONNX model",
@@ -1398,9 +1440,11 @@ def try_model(root):
         return
 
     try:
-        predicted_hives = predict_with_onnx(
-            image, include_best_candidate=True
-        )
+        predicted_hives = detector_proposals(image)
+        if predicted_hives is None:
+            predicted_hives = predict_with_onnx(
+                image, include_best_candidate=True
+            )
     except Exception as exc:
         messagebox.showerror("Prediction failed", str(exc))
         return

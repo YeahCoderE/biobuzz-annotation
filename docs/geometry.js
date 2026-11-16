@@ -171,6 +171,14 @@ export function checkHive(model, points) {
     }
   }
   const fit = fitProjection(model, points);
+  if (fit.ok && fit.correspondences >= 8 && (fit.mirrored || fit.backSide)) {
+    issues.push({
+      type: "orientation", lines: [],
+      text: fit.mirrored
+        ? "נראה שימין ושמאל הפוכים: ימין ושמאל נקבעים כשמסתכלים על המסגרת הקדמית כשהגג למעלה."
+        : "נראה שהמסגרת הקדמית והאחורית הפוכות: הקדמית היא המסגרת הקרובה יותר למצלמה.",
+    });
+  }
   if (fit.ok && fit.correspondences >= 8) {
     const limit = Math.max(8, diag * 0.04);
     fit.residuals.forEach((residual) => {
@@ -303,7 +311,26 @@ export function fitProjection(model, points) {
     return { error: distance(project(c.world), c.image), points: c.points, label };
   });
   const rms = Math.sqrt(residuals.reduce((s, r) => s + r.error * r.error, 0) / residuals.length);
-  return { ok: true, P, project, residuals, rms, correspondences: corr.length };
+  // A general 3x4 fit also reproduces mirrored or front/back-swapped labels exactly, so check the
+  // handedness of the camera and that it sits on the front side of the cell (z > 0).
+  const Mx = P.map((row) => row.slice(0, 3));
+  const det = Mx[0][0] * (Mx[1][1] * Mx[2][2] - Mx[1][2] * Mx[2][1]) - Mx[0][1] * (Mx[1][0] * Mx[2][2] - Mx[1][2] * Mx[2][0])
+    + Mx[0][2] * (Mx[1][0] * Mx[2][1] - Mx[1][1] * Mx[2][0]);
+  const handed = corr.every((c) => Math.sign(det) * (P[2][0] * c.world[0] + P[2][1] * c.world[1] + P[2][2] * c.world[2] + P[2][3]) > 0);
+  const inv = invert3(Mx);
+  const p4 = [P[0][3], P[1][3], P[2][3]];
+  const centerZ = inv ? -(inv[2][0] * p4[0] + inv[2][1] * p4[1] + inv[2][2] * p4[2]) : 1;
+  return { ok: true, P, project, residuals, rms, correspondences: corr.length, mirrored: !handed, backSide: handed && centerZ < 0 };
+}
+
+function invert3(m) {
+  const [a, b, c] = m[0], [d, e, f] = m[1], [g, h, i] = m[2];
+  const A = e * i - f * h, B = -(d * i - f * g), C = d * h - e * g;
+  const det = a * A + b * B + c * C;
+  if (Math.abs(det) < 1e-12) return null;
+  return [[A / det, -(b * i - c * h) / det, (b * f - c * e) / det],
+    [B / det, (a * i - c * g) / det, -(a * f - c * d) / det],
+    [C / det, -(a * h - b * g) / det, (a * e - b * d) / det]];
 }
 
 /** Fill every empty endpoint from the fitted camera. Returns the filled indexes. */

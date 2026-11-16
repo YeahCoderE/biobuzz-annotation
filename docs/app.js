@@ -2,6 +2,7 @@ import {
   buildModel, cornerLabel, endpointLabel, fixSwappedEndpoints, checkHive, autoComplete, fitProjection, POINTS_PER_HIVE,
 } from "./geometry.js";
 import { createRealtime, topicKey } from "./realtime.js";
+import { detectorAvailable, detectCells } from "./detector.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const USER_KEY = "biobuzz-user";
@@ -627,6 +628,7 @@ function renderEditor() {
   $("undo-button").disabled = state.readOnly || !state.undo.length;
   $("redo-button").disabled = state.readOnly || !state.redo.length;
   $("autocomplete-button").disabled = state.readOnly || h.points.every(Boolean);
+  if ($("detect-button")) $("detect-button").disabled = state.readOnly;
   $("prev-image").disabled = state.currentIndex <= 0;
   $("next-image").disabled = state.currentIndex >= state.images.length - 1;
   document.querySelectorAll(".mode-switch button").forEach((button) => button.classList.toggle("active", button.dataset.mode === state.mode));
@@ -1629,6 +1631,82 @@ document.addEventListener("keydown", (event) => {
 });
 
 ["pointerdown", "keydown"].forEach((type) => document.addEventListener(type, () => { state.lastActivity = Date.now(); }, { passive: true }));
+
+// ---------------------------------------------------------------------------
+// Automatic detection (trained model, runs in the browser)
+// ---------------------------------------------------------------------------
+
+async function runDetect() {
+  if (!canEdit()) return;
+  const image = currentImage();
+  if (!image || !el.image.complete || !el.image.naturalWidth) return;
+  const button = $("detect-button");
+  button.disabled = true;
+  const label = button.textContent;
+  button.textContent = "🤖 מזהה…";
+  const startedOn = state.currentName;
+  try {
+    const found = await detectCells(el.image);
+    if (state.currentName !== startedOn) return;  // the user moved to another image meanwhile
+    if (!found.length) { toast("המודל לא מצא כוורת בתמונה הזאת.", "error"); return; }
+    // slot order like the Python tools: left to right
+    const meanX = (c) => c.kpts.reduce((s, k) => s + k[0], 0) / c.kpts.length;
+    const cells = [...found].sort((a, b) => meanX(a) - meanX(b));
+    const sx = image.width / el.image.naturalWidth, sy = image.height / el.image.naturalHeight;
+    const centers = cells.map((c) => {
+      const xs = c.kpts.map((k) => k[0]), ys = c.kpts.map((k) => k[1]);
+      return [xs.reduce((a, b) => a + b, 0) / xs.length, ys.reduce((a, b) => a + b, 0) / ys.length];
+    });
+    const ref = cells.length > 1
+      ? [centers.reduce((a, c) => a + c[0], 0) / centers.length, centers.reduce((a, c) => a + c[1], 0) / centers.length]
+      : [el.image.naturalWidth / 2, el.image.naturalHeight / 2];
+    const order = state.model.cornerOrder;
+    remember();
+    state.hives = cells.map((c, i) => {
+      const h = freshHive([c.color === "blue" ? 1 : 0, centers[i][0] > ref[0] ? 1 : 0, centers[i][1] < ref[1] ? 1 : 0]);
+      const corner = {};
+      order.forEach((id, k) => {
+        corner[id] = c.kpts[k][2] >= 0.5 ? [Math.round(c.kpts[k][0] * sx), Math.round(c.kpts[k][1] * sy)] : null;
+      });
+      // frame endpoints from the confident corners; iron-rod endpoints and unsure corners from the 3D fit
+      h.points = h.points.map((_, p) => {
+        const line = state.model.lines[p >> 1];
+        const xy = corner[state.model.pointCorner[p]];
+        return line.kind === "iron" || !xy ? null : [...xy];
+      });
+      const fit = fitProjection(state.model, h.points);
+      if (fit.ok) {
+        h.points = h.points.map((xy, p) => {
+          if (xy) return xy;
+          const [x, y] = fit.project(state.model.lines[p >> 1].world[p & 1]);
+          return Number.isFinite(x) && Number.isFinite(y) ? [Math.round(x), Math.round(y)] : null;
+        });
+      }
+      h.points = h.points.map((xy, p) => xy || [...(corner[state.model.pointCorner[p]] ||
+        [Math.round(c.kpts[order.indexOf(state.model.pointCorner[p])][0] * sx), Math.round(c.kpts[order.indexOf(state.model.pointCorner[p])][1] * sy)])]);
+      h.est = h.points.map(() => true);
+      return h;
+    });
+    state.selectedHive = 0;
+    state.mode = "lines";
+    state.skipped = new Set();
+    changed();
+    toast(`המודל זיהה ${cells.length} כוורות (${cells.map((c) => `${c.color === "blue" ? "כחולה" : "אדומה"} ${Math.round(c.confidence * 100)}%`).join(", ")}). כל הקווים מסומנים כמשוערים — בדקו, תקנו ושמרו.`, "success");
+  } catch (error) {
+    console.error(error);
+    toast("הזיהוי האוטומטי נכשל: " + (error.message || error), "error");
+  } finally {
+    button.textContent = label;
+    button.disabled = state.readOnly;
+  }
+}
+
+detectorAvailable().then((ok) => {
+  const button = $("detect-button");
+  if (!button || !ok) return;
+  button.hidden = false;
+  button.addEventListener("click", runDetect);
+});
 
 boot();
 

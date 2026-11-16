@@ -4,3 +4,12 @@
 /BioBuzzPoseNet.onnx
 /__pycache__/
 *.py[cod]
+
+/.venv/
+/runs/
+/models/*.pt
+/models/*.pth
+/models/
+/runs_v*_log.txt
+/yolo11n-pose.pt
+/tools/__pycache__/
