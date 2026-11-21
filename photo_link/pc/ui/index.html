@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BioBuzz Photo Link</title>
+<style>
+:root{--bg:#101318;--panel:#171b22;--panel2:#1e232c;--line:#2a313c;--text:#e8eaed;--dim:#9aa3ad;--acc:#f5a524;--acc2:#ffcf70;--ok:#4cc38a;--warn:#ff7a59;--bad:#ef5350;--r:14px}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:#47515f}button.primary{background:var(--acc);border-color:var(--acc);color:#1a1100;font-weight:600}
+button.danger{border-color:#6b2f2f;color:#ff9c96}button:disabled{opacity:.4;cursor:default}
+input[type=text],input[type=number],select{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.app{display:flex;height:100%}
+nav{width:210px;background:var(--panel);border-inline-end:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:4px;flex:none}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;padding:4px 8px 16px}
+.logo i{width:30px;height:30px;border-radius:9px;background:var(--acc);display:grid;place-items:center;color:#1a1100;font-style:normal}
+nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--dim);cursor:pointer;text-decoration:none;user-select:none}
+nav a:hover{background:var(--panel2);color:var(--text)}nav a.on{background:#2a2113;color:var(--acc2)}
+nav .sp{flex:1}nav small{color:var(--dim);padding:0 12px}
+main{flex:1;overflow:auto;padding:22px 26px 40px;min-width:0}
+h1{font-size:20px;margin:0 0 16px;display:flex;align-items:center;gap:12px}h2{font-size:15px;margin:0 0 10px;color:var(--acc2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:16px}
+.grid{display:grid;gap:14px}.kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.kpi b{display:block;font-size:22px;margin-top:2px;direction:ltr;text-align:start;unicode-bidi:plaintext}.kpi b small{display:block;font-size:12px;font-weight:400;color:var(--dim)}.kpi span{color:var(--dim);font-size:12px}
+.hero{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.dot{width:16px;height:16px;border-radius:50%;background:var(--dim);flex:none}.dot.on{background:var(--ok);box-shadow:0 0 0 6px #4cc38a26}.dot.wait{background:var(--acc);box-shadow:0 0 0 6px #f5a52426}
+.hero h3{margin:0;font-size:20px}.hero p{margin:2px 0 0;color:var(--dim)}.hero .sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;color:var(--dim)}
+.pill.ok{color:var(--ok);border-color:#2c5b46}.pill.warn{color:var(--warn);border-color:#6b3a2c}
+canvas{width:100%;height:90px;display:block}
+.dev{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line)}.dev:first-child{border-top:0}
+.dev .n{font-weight:600;font-size:15px}.dev .m{color:var(--dim);font-size:12px}.dev .sp{flex:1;min-width:120px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.tools .sp{flex:1}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ph{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--panel2);cursor:pointer;border:2px solid transparent}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}.ph.sel{border-color:var(--acc)}
+.ph .tag{direction:ltr;position:absolute;inset-inline-start:6px;bottom:6px;background:#000a;border-radius:6px;padding:1px 6px;font-size:11px}
+.ph .chk{position:absolute;inset-inline-end:6px;top:6px;width:22px;height:22px;border-radius:50%;background:#000a;display:none;place-items:center}
+.sel-mode .ph .chk{display:grid}.ph.sel .chk{background:var(--acc);color:#1a1100}
+.strip{display:flex;gap:8px;overflow:auto;padding-bottom:4px}.strip .ph{width:120px;flex:none}
+#lb{position:fixed;inset:0;background:#000d;display:none;z-index:20;flex-direction:column}
+#lb.on{display:flex}#lb .top{display:flex;gap:10px;align-items:center;padding:12px 16px;color:var(--dim)}#lb .top .sp{flex:1}
+#lb .imgbox{flex:1;display:grid;place-items:center;min-height:0;position:relative}#lb img{max-width:96%;max-height:100%;object-fit:contain}
+#lb .arr{position:absolute;top:50%;transform:translateY(-50%);font-size:30px;background:#0008;border:0;border-radius:50%;width:48px;height:48px}
+#lb .l{inset-inline-start:14px}#lb .r{inset-inline-end:14px}
+.setrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line)}.setrow:first-of-type{border-top:0}
+.setrow label{width:220px;flex:none}.setrow label small{display:block;color:var(--dim)}.setrow .grow{flex:1;min-width:220px;display:flex;gap:8px}.setrow .grow input{flex:1}
+.sw{position:relative;width:46px;height:26px;background:var(--line);border-radius:99px;cursor:pointer;flex:none;transition:.15s}
+.sw::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s}
+.sw.on{background:var(--acc)}.sw.on::after{inset-inline-start:23px}
+.pair{display:flex;gap:24px;flex-wrap:wrap;align-items:center}.pair img{width:220px;height:220px;border-radius:12px;background:#fff;padding:6px}
+.code{font:700 26px/1.2 Consolas,monospace;letter-spacing:3px;color:var(--acc2);direction:ltr;display:inline-block}
+ol{margin:8px 0;padding-inline-start:20px;color:var(--dim)}ol li{margin:4px 0}
+#logbox{font:12px/1.5 Consolas,monospace;background:#0b0e12;border:1px solid var(--line);border-radius:12px;padding:12px;height:calc(100vh - 190px);overflow:auto;direction:ltr;text-align:left;white-space:pre-wrap}
+#logbox .warn{color:var(--warn)}#logbox .t{color:var(--dim)}
+#toast{position:fixed;bottom:22px;inset-inline-start:50%;transform:translateX(-50%);background:#2a2113;border:1px solid var(--acc);color:var(--acc2);padding:10px 18px;border-radius:12px;display:none;z-index:30}
+.empty{color:var(--dim);padding:30px;text-align:center}.hide{display:none!important}
+@media(max-width:720px){nav{width:64px}nav a span,nav small,.logo b{display:none}.setrow label{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <div class="logo"><i>⬢</i><b>BioBuzz Link</b></div>
+    <a data-p="status" class="on">📊 <span data-i="nav_status"></span></a>
+    <a data-p="photos">🖼 <span data-i="nav_photos"></span></a>
+    <a data-p="devices">📱 <span data-i="nav_devices"></span></a>
+    <a data-p="settings">⚙ <span data-i="nav_settings"></span></a>
+    <a data-p="log">📜 <span data-i="nav_log"></span></a>
+    <div class="sp"></div><small id="ver"></small>
+  </nav>
+  <main>
+    <!-- STATUS -->
+    <section id="p-status">
+      <h1><span data-i="nav_status"></span><span id="pausedPill" class="pill warn hide" data-i="paused"></span></h1>
+      <div class="card hero">
+        <div class="dot" id="heroDot"></div>
+        <div><h3 id="heroTitle"></h3><p id="heroSub"></p></div>
+        <div class="sp"></div>
+        <button id="pauseBtn"></button>
+        <button class="primary" id="addPhoneBtn" data-i="add_phone"></button>
+      </div>
+      <div class="grid kpis" style="margin-bottom:16px">
+        <div class="kpi"><span data-i="k_today"></span><b id="kToday">0</b></div>
+        <div class="kpi"><span data-i="k_total"></span><b id="kTotal">0</b></div>
+        <div class="kpi"><span data-i="k_session"></span><b id="kSession">0</b></div>
+        <div class="kpi"><span data-i="k_speed"></span><b id="kSpeed">0</b></div>
+        <div class="kpi"><span data-i="k_disk"></span><b id="kDisk">-</b></div>
+      </div>
+      <div class="card"><h2 data-i="speed_title"></h2><canvas id="chart" width="900" height="90"></canvas></div>
+      <div class="card"><h2 data-i="connected_phones"></h2><div id="statusDevs"></div></div>
+      <div class="card"><h2 data-i="recent"></h2><div id="recent" class="strip"></div></div>
+      <div class="card"><h2 data-i="net_title"></h2><div id="netInfo" style="color:var(--dim)"></div></div>
+    </section>
+
+    <!-- PHOTOS -->
+    <section id="p-photos" class="hide">
+      <h1><span data-i="nav_photos"></span><span class="pill" id="phCount"></span></h1>
+      <div class="tools">
+        <button id="selToggle" data-i="select"></button>
+        <button id="selAll" class="hide" data-i="select_all"></button>
+        <button id="delBtn" class="danger hide"></button>
+        <span class="sp"></span>
+        <button id="refreshBtn" data-i="refresh"></button>
+        <button id="folderBtn" data-i="open_folder"></button>
+      </div>
+      <div id="photos" class="photos"></div>
+      <div class="empty hide" id="phEmpty" data-i="no_photos"></div>
+      <p style="text-align:center"><button id="moreBtn" class="hide" data-i="load_more"></button></p>
+    </section>
+
+    <!-- DEVICES -->
+    <section id="p-devices" class="hide">
+      <h1 data-i="nav_devices"></h1>
+      <div class="card" id="pairCard">
+        <h2 data-i="add_phone"></h2>
+        <div class="pair">
+          <img id="qr" alt="QR">
+          <div>
+            <div><span style="color:var(--dim)" data-i="code_label"></span></div>
+            <div class="code" id="codeTxt"></div>
+            <ol><li data-i="step1"></li><li data-i="step2"></li><li data-i="step3"></li></ol>
+            <button id="copyCode" data-i="copy_code"></button>
+            <button id="newCode" class="danger" data-i="new_code"></button>
+          </div>
+        </div>
+      </div>
+      <div class="card"><h2 data-i="known_phones"></h2><div id="devList"></div></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="p-settings" class="hide">
+      <h1 data-i="nav_settings"></h1>
+      <div class="card">
+        <div class="setrow"><label><span data-i="s_folder"></span><small data-i="s_folder_h"></small></label>
+          <div class="grow"><input type="text" id="sFolder" dir="ltr"><button id="browse" data-i="browse"></button><button id="openF" data-i="open_folder"></button></div></div>
+        <div class="setrow"><label><span data-i="s_sub"></span><small data-i="s_sub_h"></small></label>
+          <select id="sSub"><option value="flat" data-i="sub_flat"></option><option value="day" data-i="sub_day"></option><option value="device" data-i="sub_device"></option></select></div>
+        <div class="setrow"><label data-i="s_name"></label><div class="grow"><input type="text" id="sName"></div></div>
+        <div class="setrow"><label><span data-i="s_lang"></span></label><select id="sLang"><option value="he">עברית</option><option value="en">English</option></select></div>
+        <div class="setrow"><label><span data-i="s_notify"></span><small data-i="s_notify_h"></small></label><div class="sw" id="sNotify"></div></div>
+        <div class="setrow"><label><span data-i="s_auto"></span><small data-i="s_auto_h"></small></label><div class="sw" id="sAuto"></div></div>
+        <div class="setrow"><label><span data-i="s_port"></span><small data-i="s_port_h"></small></label><input type="number" id="sPort" min="1024" max="65535" style="width:120px"></div>
+        <div style="padding-top:12px"><button class="primary" id="saveSet" data-i="save"></button> <button id="trashBtn" data-i="open_trash"></button></div>
+      </div>
+      <div class="card"><h2 data-i="about"></h2><div id="aboutTxt" style="color:var(--dim)"></div></div>
+    </section>
+
+    <!-- LOG -->
+    <section id="p-log" class="hide">
+      <h1><span data-i="nav_log"></span></h1>
+      <div class="tools"><select id="logFilter"><option value="all" data-i="log_all"></option><option value="warn" data-i="log_warn"></option></select>
+        <span class="sp"></span><button id="copyLog" data-i="copy"></button></div>
+      <div id="logbox"></div>
+    </section>
+  </main>
+</div>
+
+<div id="lb">
+  <div class="top"><b id="lbName"></b><span id="lbMeta"></span><span class="sp"></span>
+    <button id="lbShow" data-i="show_explorer"></button><button id="lbDel" class="danger" data-i="delete"></button><button id="lbClose">✕</button></div>
+  <div class="imgbox"><button class="arr l" id="lbPrev">‹</button><img id="lbImg" alt=""><button class="arr r" id="lbNext">›</button></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const TXT = {
+he: {nav_status:"סטטוס",nav_photos:"תמונות",nav_devices:"מכשירים",nav_settings:"הגדרות",nav_log:"יומן",paused:"הקבלה מושהית",
+ add_phone:"חיבור טלפון",k_today:"תמונות היום",k_total:"סה״כ תמונות",k_session:"בהרצה הזאת",k_speed:"מהירות קבלה",k_disk:"מקום פנוי בדיסק",
+ speed_title:"מהירות קבלה (60 שניות אחרונות)",connected_phones:"טלפונים",recent:"תמונות אחרונות",net_title:"כתובת ברשת",
+ select:"בחירה",select_all:"בחר הכול",refresh:"רענן",open_folder:"פתח תיקייה",no_photos:"עדיין אין תמונות בתיקייה",load_more:"טען עוד",
+ code_label:"קוד חיבור",step1:"התקן את BioBuzzPhotoLink.apk בטלפון ופתח אותו",step2:"הטלפון והמחשב חייבים להיות באותה רשת Wi-Fi",step3:"סרוק את ה-QR (פעם אחת בלבד) או הזן את הקוד",
+ copy_code:"העתק קוד",new_code:"קוד חדש",known_phones:"טלפונים שהתחברו",
+ s_folder:"תיקיית שמירה",s_folder_h:"כאן נשמרות התמונות מהטלפון",browse:"בחר…",s_sub:"תתי־תיקיות",s_sub_h:"ברירת המחדל: הכול בתיקייה אחת",
+ sub_flat:"הכול בתיקייה אחת",sub_day:"תיקייה לכל יום",sub_device:"תיקייה לכל טלפון",s_name:"שם המחשב",s_lang:"שפה",
+ s_notify:"התראה על תמונות חדשות",s_notify_h:"בועה ליד השעון כשמגיעות תמונות",s_auto:"הפעלה עם Windows",s_auto_h:"רץ ברקע במגש המערכת",
+ s_port:"פורט",s_port_h:"שינוי נכנס לתוקף אחרי הפעלה מחדש",save:"שמור",open_trash:"פתח סל מחזור",about:"אודות",
+ log_all:"הכול",log_warn:"אזהרות בלבד",copy:"העתק",show_explorer:"הצג בסייר הקבצים",delete:"מחק",
+ pause:"השהה קבלה",resume:"המשך קבלה",none_connected:"ממתין לטלפון…",n_connected:"{n} טלפונים מחוברים",one_connected:"טלפון אחד מחובר",
+ hero_wait:"פתח את האפליקציה בטלפון. אם כבר חיברת – היא תתחבר לבד.",hero_ok:"התמונות נשלחות לתיקייה אוטומטית",
+ online:"מחובר",offline:"מנותק",blocked:"חסום",battery:"סוללה",queue:"בתור",signal:"קליטה",latency:"השהיה",last_seen:"נראה לאחרונה",photos:"תמונות",
+ rename:"שנה שם",disconnect:"נתק",block:"חסום",unblock:"בטל חסימה",forget:"הסר",no_phones:"אין טלפונים מחוברים",no_known:"עדיין לא התחבר אף טלפון",
+ saved:"נשמר",copied:"הועתק",confirm_del:"להעביר {n} תמונות לסל המחזור?",confirm_code:"קוד חדש ינתק את כל הטלפונים עד שיסרקו שוב. להמשיך?",
+ confirm_forget:"להסיר את המכשיר מהרשימה?",rename_q:"שם חדש:",delete_n:"מחק ({n})",version:"גרסה",data_folder:"תיקיית נתונים",
+ now:"עכשיו",ago_s:"לפני {n} שנ׳",ago_m:"לפני {n} דק׳",ago_h:"לפני {n} שע׳",ago_d:"לפני {n} ימים",of:"מתוך",ip:"כתובת"},
+en: {nav_status:"Status",nav_photos:"Photos",nav_devices:"Devices",nav_settings:"Settings",nav_log:"Log",paused:"Receiving paused",
+ add_phone:"Connect a phone",k_today:"Photos today",k_total:"Total photos",k_session:"This run",k_speed:"Receive speed",k_disk:"Free disk space",
+ speed_title:"Receive speed (last 60 s)",connected_phones:"Phones",recent:"Recent photos",net_title:"Network address",
+ select:"Select",select_all:"Select all",refresh:"Refresh",open_folder:"Open folder",no_photos:"No photos in the folder yet",load_more:"Load more",
+ code_label:"Pairing code",step1:"Install BioBuzzPhotoLink.apk on the phone and open it",step2:"Phone and PC must be on the same Wi-Fi",step3:"Scan the QR (one time only) or type the code",
+ copy_code:"Copy code",new_code:"New code",known_phones:"Phones that connected",
+ s_folder:"Save folder",s_folder_h:"Where photos from the phone are stored",browse:"Browse…",s_sub:"Subfolders",s_sub_h:"Default: everything in one folder",
+ sub_flat:"Everything in one folder",sub_day:"One folder per day",sub_device:"One folder per phone",s_name:"PC name",s_lang:"Language",
+ s_notify:"Notify about new photos",s_notify_h:"A balloon near the clock",s_auto:"Start with Windows",s_auto_h:"Runs in the system tray",
+ s_port:"Port",s_port_h:"Takes effect after a restart",save:"Save",open_trash:"Open trash",about:"About",
+ log_all:"All",log_warn:"Warnings only",copy:"Copy",show_explorer:"Show in Explorer",delete:"Delete",
+ pause:"Pause receiving",resume:"Resume receiving",none_connected:"Waiting for a phone…",n_connected:"{n} phones connected",one_connected:"1 phone connected",
+ hero_wait:"Open the app on the phone. If it was paired before it connects by itself.",hero_ok:"Photos are saved to the folder automatically",
+ online:"Online",offline:"Offline",blocked:"Blocked",battery:"Battery",queue:"Queued",signal:"Signal",latency:"Latency",last_seen:"Last seen",photos:"Photos",
+ rename:"Rename",disconnect:"Disconnect",block:"Block",unblock:"Unblock",forget:"Forget",no_phones:"No phone connected",no_known:"No phone has connected yet",
+ saved:"Saved",copied:"Copied",confirm_del:"Move {n} photo(s) to the trash folder?",confirm_code:"A new code disconnects every phone until it scans again. Continue?",
+ confirm_forget:"Remove this device from the list?",rename_q:"New name:",delete_n:"Delete ({n})",version:"Version",data_folder:"Data folder",
+ now:"now",ago_s:"{n}s ago",ago_m:"{n} min ago",ago_h:"{n} h ago",ago_d:"{n} days ago",of:"of",ip:"Address"}
+};
+let S=null, lang="he", photos=[], photoTotal=0, sel=new Set(), selMode=false, lbIdx=-1, speed=[], logLines=[], logFilter="all";
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const t=(k,v)=>{let s=(TXT[lang]||TXT.en)[k]??TXT.en[k]??k;if(v)for(const a in v)s=s.replace("{"+a+"}",v[a]);return s};
+const api=(p,b)=>fetch(p,b===undefined?{}:{method:"POST",headers:{"X-BB":"1","Content-Type":"application/json"},body:JSON.stringify(b)}).then(r=>r.json());
+const fmtB=n=>n>=1e9?(n/1e9).toFixed(1)+" GB":n>=1e6?(n/1e6).toFixed(1)+" MB":n>=1e3?Math.round(n/1e3)+" KB":n+" B";
+const ago=ts=>{if(!ts)return"-";const s=Math.max(0,Date.now()/1000-ts);return s<5?t("now"):s<60?t("ago_s",{n:Math.round(s)}):s<3600?t("ago_m",{n:Math.round(s/60)}):s<86400?t("ago_h",{n:Math.round(s/3600)}):t("ago_d",{n:Math.round(s/86400)})};
+function toast(m){const e=$("#toast");e.textContent=m;e.style.display="block";clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.display="none",2200)}
+function setLang(l){lang=l;document.documentElement.lang=l;document.documentElement.dir=l==="he"?"rtl":"ltr";$$("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));renderAll()}
+
+// ---- navigation
+function go(p){$$("nav a").forEach(a=>a.classList.toggle("on",a.dataset.p===p));["status","photos","devices","settings","log"].forEach(x=>$("#p-"+x).classList.toggle("hide",x!==p));
+  location.hash=p;if(p==="photos"&&!photos.length)loadPhotos(true);if(p==="devices")$("#qr").src="/api/qr.png?"+Date.now();if(p==="log")loadLog();if(p==="settings")fillSettings()}
+$$("nav a").forEach(a=>a.onclick=()=>go(a.dataset.p));
+$("#addPhoneBtn").onclick=()=>go("devices");
+
+// ---- status
+function renderStatus(){if(!S)return;const n=S.online;
+  $("#heroDot").className="dot "+(n?"on":"wait");
+  $("#heroTitle").textContent=n?(n===1?t("one_connected"):t("n_connected",{n})):t("none_connected");
+  $("#heroSub").textContent=n?t("hero_ok"):t("hero_wait");
+  $("#pausedPill").classList.toggle("hide",!S.paused);$("#pauseBtn").textContent=S.paused?t("resume"):t("pause");
+  $("#kToday").textContent=S.today;$("#kTotal").textContent=S.total;$("#kSession").textContent=S.session+" · "+fmtB(S.session_bytes);
+  $("#kDisk").textContent=fmtB(S.disk_free);$("#ver").textContent=t("version")+" "+S.version;
+  $("#netInfo").innerHTML=S.ips.map(i=>`<code style="direction:ltr;display:inline-block;color:var(--text)">${i}:${S.port}</code>`).join(" &nbsp; ");
+  const on=S.devices.filter(d=>d.online);$("#statusDevs").innerHTML=on.length?on.map(devHtml).join(""):`<div class="empty">${t("no_phones")}</div>`;
+  $("#recent").innerHTML=(S.recent||[]).map((r,i)=>`<div class="ph" data-n="${encodeURI(r.name)}"><img loading="lazy" src="/thumb/${encodeURI(r.name)}"><span class="tag">${ago(r.ts)}</span></div>`).join("")||`<div class="empty" style="width:100%">${t("no_photos")}</div>`;
+  $$("#recent .ph").forEach(e=>e.onclick=()=>openByName(decodeURI(e.dataset.n)));
+  drawChart();
+  $("#aboutTxt").innerHTML=`${t("version")}: ${S.version}<br>${t("data_folder")}: <code style="direction:ltr;display:inline-block">%APPDATA%\\BioBuzzPhotoLink</code>`}
+function devHtml(d){const bat=d.battery!=null?`${t("battery")} ${d.battery}%${d.charging?" ⚡":""}`:"";const q=d.queue?`${t("queue")} ${d.queue}`:"";
+  const sig=d.rssi!=null?`${t("signal")} ${d.rssi} dBm`:"";const lat=d.latency!=null?`${t("latency")} ${d.latency} ms`:"";const sp=d.mbps?`${d.mbps.toFixed(0)} Mbps`:"";
+  const state=d.blocked?`<span class="pill warn">${t("blocked")}</span>`:d.online?`<span class="pill ok">${t("online")}</span>`:`<span class="pill">${t("offline")}</span>`;
+  return `<div class="dev"><div><div class="n">${esc(d.name)} ${state}</div><div class="m">${[t("ip")+" "+d.ip,bat,q,sig,lat,sp].filter(Boolean).join(" · ")}</div></div><div class="sp"></div>
+   <div class="m">${t("photos")}: ${d.count} · ${fmtB(d.bytes)} · ${t("last_seen")}: ${d.online?t("now"):ago(d.last)}</div>${d.__actions?devActions(d):""}</div>`}
+function devActions(d){return `<div><button data-a="rename" data-id="${d.id}">${t("rename")}</button> ${d.online?`<button data-a="disconnect" data-id="${d.id}">${t("disconnect")}</button>`:""}
+  <button data-a="${d.blocked?"unblock":"block"}" data-id="${d.id}">${d.blocked?t("unblock"):t("block")}</button> <button class="danger" data-a="forget" data-id="${d.id}">${t("forget")}</button></div>`}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function drawChart(){const c=$("#chart");if(!c)return;const w=c.width=c.clientWidth*devicePixelRatio,h=c.height=90*devicePixelRatio;const x=c.getContext("2d");x.clearRect(0,0,w,h);
+  const data=speed.length?speed:(S?S.speed:[]);const max=Math.max(1e6,...data);const bw=w/60;
+  data.forEach((v,i)=>{const bh=v/max*(h-14);x.fillStyle="#f5a524";x.globalAlpha=.85;x.fillRect(i*bw+1,h-bh,bw-2,bh)});
+  const cur=data.length?data[data.length-1]:0;$("#kSpeed").innerHTML=(cur*8/1e6).toFixed(0)+" Mbps<small>"+(cur/1e6).toFixed(1)+" MB/s</small>";
+  x.globalAlpha=1;x.fillStyle="#9aa3ad";x.font=`${11*devicePixelRatio}px sans-serif`;x.fillText((max/1e6).toFixed(1)+" MB/s",4,12*devicePixelRatio)}
+$("#pauseBtn").onclick=()=>api("/api/pause",{paused:!S.paused}).then(r=>{S.paused=r.paused;renderStatus()});
+
+// ---- photos
+async function loadPhotos(reset){if(reset){photos=[];}const r=await api(`/api/photos?offset=${photos.length}&limit=120`);photoTotal=r.total;photos=photos.concat(r.items);renderPhotos()}
+function renderPhotos(){$("#phCount").textContent=photoTotal;$("#phEmpty").classList.toggle("hide",photos.length>0);
+  $("#photos").innerHTML=photos.map((p,i)=>`<div class="ph ${sel.has(p.name)?"sel":""}" data-i="${i}"><img loading="lazy" src="/thumb/${encodeURI(p.name)}"><span class="chk">✓</span><span class="tag">${fmtB(p.size)}</span></div>`).join("");
+  $$("#photos .ph").forEach(e=>e.onclick=()=>{const p=photos[+e.dataset.i];if(selMode){sel.has(p.name)?sel.delete(p.name):sel.add(p.name);e.classList.toggle("sel");updSel()}else openLb(+e.dataset.i)});
+  $("#moreBtn").classList.toggle("hide",photos.length>=photoTotal);updSel()}
+function updSel(){document.body.classList.toggle("sel-mode",selMode);$("#selAll").classList.toggle("hide",!selMode);$("#delBtn").classList.toggle("hide",!selMode||!sel.size);$("#delBtn").textContent=t("delete_n",{n:sel.size})}
+$("#selToggle").onclick=()=>{selMode=!selMode;if(!selMode)sel.clear();renderPhotos()};
+$("#selAll").onclick=()=>{photos.forEach(p=>sel.add(p.name));renderPhotos()};
+$("#delBtn").onclick=async()=>{if(!confirm(t("confirm_del",{n:sel.size})))return;await api("/api/delete",{names:[...sel]});sel.clear();selMode=false;loadPhotos(true)};
+$("#refreshBtn").onclick=()=>loadPhotos(true);$("#moreBtn").onclick=()=>loadPhotos(false);
+$("#folderBtn").onclick=()=>api("/api/open-folder",{});$("#openF").onclick=()=>api("/api/open-folder",{});$("#trashBtn").onclick=()=>api("/api/open-folder",{trash:true});
+function openByName(n){const i=photos.findIndex(p=>p.name===n);if(i>=0)return openLb(i);photos=[{name:n,size:0,mtime:Date.now()/1000}];openLb(0)}
+function openLb(i){if(i<0||i>=photos.length)return;lbIdx=i;const p=photos[i];$("#lb").classList.add("on");$("#lbImg").src="/photo/"+encodeURI(p.name);$("#lbName").textContent=p.name;$("#lbMeta").textContent=(p.size?fmtB(p.size)+" · ":"")+new Date(p.mtime*1000).toLocaleString()}
+function closeLb(){$("#lb").classList.remove("on");$("#lbImg").src=""}
+$("#lbClose").onclick=closeLb;$("#lbPrev").onclick=()=>openLb(lbIdx-1);$("#lbNext").onclick=()=>openLb(lbIdx+1);
+$("#lbShow").onclick=()=>api("/api/open-photo",{name:photos[lbIdx].name});
+$("#lbDel").onclick=async()=>{if(!confirm(t("confirm_del",{n:1})))return;await api("/api/delete",{names:[photos[lbIdx].name]});closeLb();loadPhotos(true)};
+document.addEventListener("keydown",e=>{if(!$("#lb").classList.contains("on"))return;if(e.key==="Escape")closeLb();const rtl=lang==="he";if(e.key==="ArrowLeft")openLb(lbIdx+(rtl?1:-1));if(e.key==="ArrowRight")openLb(lbIdx+(rtl?-1:1))});
+
+// ---- devices
+function renderDevices(){if(!S)return;$("#codeTxt").textContent=S.code;
+  const list=S.devices.map(d=>({...d,__actions:true}));$("#devList").innerHTML=list.length?list.map(devHtml).join(""):`<div class="empty">${t("no_known")}</div>`;
+  $$("#devList button").forEach(b=>b.onclick=async()=>{const a=b.dataset.a,id=b.dataset.id;let body={id,action:a};
+    if(a==="rename"){const cur=S.devices.find(d=>d.id===id).name;const n=prompt(t("rename_q"),cur);if(!n)return;body.name=n}
+    if(a==="forget"&&!confirm(t("confirm_forget")))return;await api("/api/device",body)})}
+$("#copyCode").onclick=()=>{navigator.clipboard.writeText(S.code.replace(/-/g,""));toast(t("copied"))};
+$("#newCode").onclick=async()=>{if(!confirm(t("confirm_code")))return;const r=await api("/api/new-code",{});S=r.state;$("#qr").src="/api/qr.png?"+Date.now();renderAll()};
+
+// ---- settings
+function fillSettings(){if(!S)return;const c=S.config;$("#sFolder").value=c.save_dir;$("#sSub").value=c.subfolders;$("#sName").value=c.pc_name;$("#sLang").value=c.lang;$("#sPort").value=c.port;
+  $("#sNotify").classList.toggle("on",!!c.notify);$("#sAuto").classList.toggle("on",!!c.autostart)}
+$("#sNotify").onclick=e=>e.target.classList.toggle("on");$("#sAuto").onclick=e=>e.target.classList.toggle("on");
+$("#browse").onclick=async()=>{const r=await api("/api/pick-folder",{});if(r.path)$("#sFolder").value=r.path};
+$("#saveSet").onclick=async()=>{const r=await api("/api/settings",{save_dir:$("#sFolder").value,subfolders:$("#sSub").value,pc_name:$("#sName").value,lang:$("#sLang").value,
+  port:+$("#sPort").value,notify:$("#sNotify").classList.contains("on"),autostart:$("#sAuto").classList.contains("on")});
+  if(!r.ok){toast(r.error||"error");return}S=r.state;setLang(S.config.lang);fillSettings();photos=[];toast(t("saved"))};
+
+// ---- log
+async function loadLog(){const r=await api("/api/log");logLines=r.lines;renderLog()}
+function renderLog(){const b=$("#logbox");const near=b.scrollTop+b.clientHeight>=b.scrollHeight-40;
+  b.innerHTML=logLines.filter(l=>logFilter==="all"||l.level==="warn").map(l=>`<div class="${l.level}"><span class="t">${new Date(l.ts*1000).toLocaleTimeString()}</span> ${esc(l.msg)}</div>`).join("");if(near)b.scrollTop=b.scrollHeight}
+$("#logFilter").onchange=e=>{logFilter=e.target.value;renderLog()};$("#copyLog").onclick=()=>{navigator.clipboard.writeText($("#logbox").innerText);toast(t("copied"))};
+
+function renderAll(){renderStatus();renderDevices();if(!$("#p-photos").classList.contains("hide"))renderPhotos()}
+
+// ---- live events
+function connect(){const ws=new WebSocket(`ws://${location.host}/events`);
+  ws.onmessage=m=>{const e=JSON.parse(m.data);
+    if(e.t==="state"&&e.state){S=e.state;speed=[];if(S.config.lang!==lang)setLang(S.config.lang);else renderAll()}
+    else if(e.t==="state"){S.paused=e.paused;renderStatus()}
+    else if(e.t==="devices"){S.devices=e.devices;S.online=e.devices.filter(d=>d.online).length;renderStatus();renderDevices()}
+    else if(e.t==="speed"){speed=(speed.length?speed:S.speed.slice()).concat([e.bps]).slice(-60);drawChart()}
+    else if(e.t==="photo"){S.today=e.today;S.total=e.total;S.session++;S.session_bytes+=e.size;S.recent=[{name:e.name,ts:e.ts,size:e.size},...(S.recent||[])].slice(0,12);renderStatus();
+      if(!$("#p-photos").classList.contains("hide")){photos.unshift({name:e.name,size:e.size,mtime:e.ts});photoTotal++;renderPhotos()}}
+    else if(e.t==="deleted"){photos=photos.filter(p=>!e.names.includes(p.name));renderPhotos()}
+    else if(e.t==="log"){logLines.push({ts:Date.now()/1000,level:e.level,msg:e.line.slice(9)});if(logLines.length>1500)logLines.shift();if(!$("#p-log").classList.contains("hide"))renderLog()}};
+  ws.onclose=()=>setTimeout(connect,1500)}
+setInterval(()=>{if(S&&!$("#p-status").classList.contains("hide"))renderStatus()},15000);
+setLang("he");connect();go(location.hash.slice(1)||"status");
+</script>
+</body>
+</html>

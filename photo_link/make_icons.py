@@ -26,6 +26,7 @@ def draw(size: int) -> Image.Image:
 def main() -> None:
     (ROOT / "pc").mkdir(exist_ok=True)
     draw(256).save(ROOT / "pc" / "icon.ico", sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+    draw(128).save(ROOT / "pc" / "icon.png")
     res = ROOT / "android" / "app" / "src" / "main" / "res"
     for folder, px in (("mdpi", 48), ("hdpi", 72), ("xhdpi", 96), ("xxhdpi", 144), ("xxxhdpi", 192)):
         out = res / f"mipmap-{folder}"

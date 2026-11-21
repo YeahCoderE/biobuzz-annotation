@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.biobuzz.photolink.GridOverlay
+        android:id="@+id/gridOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/flash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="#FFFFFF" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/chipStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_pill"
+            android:paddingBottom="8dp"
+            android:paddingEnd="14dp"
+            android:paddingStart="14dp"
+            android:paddingTop="8dp"
+            android:textColor="@color/text"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/btnFlash"
+            style="@style/RoundBtn"
+            android:layout_marginStart="8dp" />
+
+        <TextView
+            android:id="@+id/btnGrid"
+            style="@style/RoundBtn"
+            android:layout_marginStart="8dp"
+            android:text="▦" />
+
+        <TextView
+            android:id="@+id/btnLens"
+            style="@style/RoundBtn"
+            android:layout_marginStart="8dp"
+            android:text="⟲" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/permCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="24dp"
+        android:background="@drawable/bg_pill"
+        android:gravity="center"
+        android:padding="20dp"
+        android:text="@string/perm_why"
+        android:textColor="@color/text"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_gravity="bottom"
+        android:background="#B314171C">
+
+        <ImageView
+            android:id="@+id/lastThumb"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="24dp"
+            android:background="@drawable/bg_pill"
+            android:contentDescription="@string/tab_photos"
+            android:scaleType="centerCrop" />
+
+        <ImageButton
+            android:id="@+id/shutter"
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_shutter"
+            android:contentDescription="@string/shutter" />
+
+        <TextView
+            android:id="@+id/queueBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/bg_pill"
+            android:paddingBottom="8dp"
+            android:paddingEnd="14dp"
+            android:paddingStart="14dp"
+            android:paddingTop="8dp"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
+    </FrameLayout>
+</FrameLayout>
