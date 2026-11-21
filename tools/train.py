@@ -25,6 +25,7 @@ def main():
     ap.add_argument("--fraction", type=float, default=1.0)
     ap.add_argument("--lr0", type=float, default=0.002)
     ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--save-period", type=int, default=1)
     ap.add_argument("--mosaic", type=float, default=0.5)
     ap.add_argument("--close-mosaic", type=int, default=1)
     args = ap.parse_args()
@@ -42,7 +43,7 @@ def main():
         exist_ok=True, cache=False, patience=0, optimizer="AdamW", lr0=args.lr0, cos_lr=True, warmup_epochs=0.5,
         mosaic=args.mosaic, close_mosaic=args.close_mosaic, degrees=12.0, translate=0.12, scale=0.5, shear=2.0, perspective=0.0005,
         fliplr=0.5, hsv_h=0.012, hsv_s=0.45, hsv_v=0.4, pose=14.0, kobj=1.0, amp=False, plots=True,
-        fraction=args.fraction, seed=1, deterministic=False, val=True,
+        fraction=args.fraction, save_period=args.save_period, seed=1, deterministic=False, val=True,
     )
 
 

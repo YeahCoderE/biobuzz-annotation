@@ -89,15 +89,15 @@ Test photos never used for training: see `TEST_BURSTS` in `tools/build_yolo.py`.
 * **Network + 3D fit** (`--fit`): the network finds each cell, then the real 3D cell is fitted
   to the red/blue rib pixels inside the box. Much more exact, about 20-60 s per cell on this CPU.
 
-### Measured accuracy (9 held-out photos, 9 cells, model v3, ONNX as deployed)
+### Measured accuracy (9 held-out photos, 9 cells, model v5, ONNX as deployed)
 
 | | Network only | Network + 3D fit (`--fit`) |
 |---|---|---|
 | Cells found | 9 / 9 | 9 / 9 |
 | False detections | 0 | 0 |
-| Mean corner error (% of cell size) | 10.1 % | 3.1 % |
-| Corners within 5 % | 21 % | 88 % |
-| Cells with at least 9 of 10 corners within 5 % | 0 % | 67 % (6 / 9) |
+| Mean corner error (% of cell size) | 7.7 % | 3.9 % |
+| Corners within 5 % | 71 % | 83 % |
+| Cells with at least 9 of 10 corners within 5 % | 56 % (5 / 9) | 78 % (7 / 9) |
 
 How to read this honestly:
 * The test labels were made with the same silhouette fit (from a rough box, then checked by eye),
@@ -109,6 +109,8 @@ How to read this honestly:
   plastic, or cut off at the photo edge); the colour fit gets pulled towards it. The side view
   (191810) has no defined front frame, so either labelling is accepted for it.
 * Model history on the same test: v1 15.2 % corner error / 12 false detections, v2 11.8 % / 1,
-  v3 10.1 % / 0. The final run (v4, all 57,300 training images) was still training when this was written.
+  v3 10.1 % / 0, v5 7.7 % / 0 (network only; strict success 0 % -> 56 %). v5 is a 10-epoch run over all
+  57,300 training images (60 hours on this CPU). With the 3D fit v5 passes 7 / 9 cells (v3: 6 / 9) but its
+  mean error is slightly higher (3.9 % vs 3.1 %), which is within the label noise.
 * 9 cells is a small test set: one cell is 11 percentage points. The 98 % goal is not reached yet;
   the network needs more training (CPU-bound here) and more real, varied photos.

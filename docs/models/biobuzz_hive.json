@@ -1,5 +1,5 @@
 {
- "version": "v3",
+ "version": "v5",
  "imgsz": 448,
  "conf": 0.35,
  "classes": [
@@ -34,5 +34,5 @@
   "מוט ברזל · שמאל",
   "מוט ברזל · ימין"
  ],
- "onnx_vs_pytorch_max_px": 106.823
+ "onnx_vs_pytorch_max_px": 71.752
 }
