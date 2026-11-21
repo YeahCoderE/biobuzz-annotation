@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BioBuzz Photo Link</string>
+
+    <string name="perm_title">צריך גישה למצלמה</string>
+    <string name="perm_why">האפליקציה צריכה את המצלמה כדי לצלם תמונות ולשלוח אותן מיד למחשב. התמונות נשלחות רק למחשב שחיברת.</string>
+    <string name="perm_grant">אפשר גישה למצלמה</string>
+    <string name="perm_settings">פתח הגדרות כדי לאפשר מצלמה</string>
+    <string name="perm_denied">הגישה למצלמה נדחתה. בלעדיה אי אפשר לצלם.</string>
+    <string name="ok">אישור</string>
+    <string name="cancel">ביטול</string>
+
+    <string name="pair_title">חיבור למחשב</string>
+    <string name="pair_help">פתח את BioBuzz Photo Link במחשב וסרוק את קוד ה-QR. הטלפון והמחשב חייבים להיות באותה רשת Wi-Fi.</string>
+    <string name="pair_scan">סרוק QR</string>
+    <string name="pair_manual">או הזן ידנית</string>
+    <string name="pair_host_hint">כתובת המחשב, למשל 192.168.1.10</string>
+    <string name="pair_code_hint">קוד</string>
+    <string name="pair_connect">התחבר</string>
+    <string name="pair_scan_prompt">כוון אל קוד ה-QR שבחלון המחשב</string>
+    <string name="pair_checking">מתחבר…</string>
+    <string name="pair_ok">מחובר!</string>
+    <string name="pair_bad_link">הקוד אינו תקין. סרוק את ה-QR של BioBuzz Photo Link.</string>
+    <string name="pair_bad_code">הקוד שגוי. סרוק שוב את ה-QR.</string>
+    <string name="pair_unreachable">לא הצלחתי להגיע למחשב. בדוק שהוא באותה רשת Wi-Fi, שהאפליקציה פתוחה, ושחומת האש של Windows מאפשרת גישה.</string>
+    <string name="pair_private_only">הכתובת חייבת להיות מהרשת המקומית (192.168.x.x, 10.x.x.x או 172.16-31.x.x).</string>
+
+    <string name="status_online">מחובר למחשב · נשלחו %1$d</string>
+    <string name="status_offline">אין חיבור למחשב</string>
+    <string name="status_pending">בתור %1$d</string>
+    <string name="status_auth">הקוד נדחה. חבר מחדש (⚙)</string>
+    <string name="shot_failed">הצילום נכשל</string>
+    <string name="camera_failed">לא הצלחתי להפעיל את המצלמה</string>
+    <string name="shutter">צלם</string>
+    <string name="settings">הגדרות חיבור</string>
+</resources>
