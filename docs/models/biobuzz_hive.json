@@ -1,5 +1,5 @@
 {
- "version": "v5",
+ "version": "v6b",
  "imgsz": 448,
  "conf": 0.35,
  "classes": [
@@ -34,5 +34,15 @@
   "מוט ברזל · שמאל",
   "מוט ברזל · ימין"
  ],
- "onnx_vs_pytorch_max_px": 71.752
+ "onnx_vs_pytorch_max_px": 36.362,
+ "accuracy_on_held_out_real_photos": {
+  "cells": 9,
+  "found": 9,
+  "recall": 1.0,
+  "false_detections": 0,
+  "precision": 1.0,
+  "corner_mean_err_pct": 7.74,
+  "corners_within_5pct": 0.7416,
+  "cell_success_rate": 0.6667
+ }
 }
